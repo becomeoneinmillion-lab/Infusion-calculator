@@ -31,9 +31,12 @@
     input[type=number] {
       -moz-appearance: textfield;
     }
+    .safe-bottom-padding {
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    }
   </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-white pb-16 sm:pb-8">
+<body class="min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-white safe-bottom-padding">
 
   <!-- TOP HEADER (LIGHT THEME, CLEAN, EXACTLY 'Infusion Calculator') -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
@@ -99,36 +102,36 @@
       </div>
     </div>
 
-    <!-- PERSISTENT STICKY ACTIVE CASE BAR (NEVER HIDES ON SCROLL) -->
+    <!-- DYNAMIC PERSISTENT STICKY CASE BAR (ONLY SHOWS SELECTED ITEMS) -->
     <div id="sticky-case-summary" class="bg-teal-700 text-white border-b border-teal-800 px-3 py-2 shadow-sm transition-all hidden">
       <div class="max-w-4xl mx-auto flex items-center justify-between gap-2 overflow-x-auto touch-scroll text-xs">
         <div class="flex items-center gap-1.5 flex-nowrap shrink-0">
           <span class="text-[10px] font-black uppercase tracking-wider text-teal-200 hidden sm:inline flex items-center gap-1">
-            <i class="fa-solid fa-heart-pulse"></i> Active:
+            <i class="fa-solid fa-heart-pulse"></i> Case:
           </span>
 
-          <!-- Drug Chip -->
-          <button onclick="goToStep(1)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change drug">
+          <!-- Drug Chip (Appears only after selection) -->
+          <button id="sticky-chip-drug-btn" onclick="goToStep(1)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition hidden" title="Tap to change drug">
             <span class="text-[10px] text-teal-200 font-bold uppercase">Drug:</span>
             <span id="sticky-chip-drug" class="font-extrabold whitespace-nowrap">--</span>
           </button>
 
-          <!-- Weight Chip -->
-          <button onclick="goToStep(2)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change weight">
+          <!-- Weight Chip (Appears only after entered) -->
+          <button id="sticky-chip-weight-btn" onclick="goToStep(2)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition hidden" title="Tap to change weight">
             <span class="text-[10px] text-teal-200 font-bold uppercase">Wt:</span>
             <span id="sticky-chip-weight" class="font-extrabold font-mono whitespace-nowrap">-- kg</span>
           </button>
 
-          <!-- Syringe Chip -->
-          <button onclick="goToStep(4)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change syringe">
-            <span class="text-[10px] text-teal-200 font-bold uppercase">Syr:</span>
-            <span id="sticky-chip-syringe" class="font-extrabold font-mono whitespace-nowrap">-- mL</span>
+          <!-- Prep Chip (Appears only after chosen) -->
+          <button id="sticky-chip-prep-btn" onclick="goToStep(3)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition hidden" title="Tap to change commercial preparation">
+            <span class="text-[10px] text-teal-200 font-bold uppercase">Prep:</span>
+            <span id="sticky-chip-prep" class="font-bold text-teal-100 truncate max-w-[150px] sm:max-w-[240px] whitespace-nowrap">--</span>
           </button>
 
-          <!-- Commercial Prep Chip -->
-          <button onclick="goToStep(3)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change commercial preparation">
-            <span class="text-[10px] text-teal-200 font-bold uppercase">Prep:</span>
-            <span id="sticky-chip-prep" class="font-bold text-teal-100 truncate max-w-[150px] sm:max-w-[260px] whitespace-nowrap">--</span>
+          <!-- Syringe Chip (Appears only after chosen) -->
+          <button id="sticky-chip-syringe-btn" onclick="goToStep(4)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition hidden" title="Tap to change syringe">
+            <span class="text-[10px] text-teal-200 font-bold uppercase">Syr:</span>
+            <span id="sticky-chip-syringe" class="font-extrabold font-mono whitespace-nowrap">-- mL</span>
           </button>
         </div>
 
@@ -180,28 +183,11 @@
         <div id="step-drugs-grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
           <!-- Populated dynamically via JS -->
         </div>
-
-        <!-- Selected Drug Banner (Appears only after user selects) -->
-        <div id="step1-selection-banner" class="mt-6 p-4 rounded-2xl border-2 border-teal-500 bg-teal-50/70 flex flex-col sm:flex-row items-center justify-between gap-3 hidden shadow-sm">
-          <div class="flex items-center gap-3 w-full sm:w-auto">
-            <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-base flex-shrink-0 shadow">
-              <i class="fa-solid fa-check"></i>
-            </div>
-            <div>
-              <div class="text-[11px] text-teal-800 font-extrabold uppercase tracking-wider">Drug Selected:</div>
-              <div id="step1-selected-name" class="text-base font-black text-slate-900">Noradrenaline</div>
-            </div>
-          </div>
-          <button onclick="goToStep(2)" class="w-full sm:w-auto px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm rounded-xl shadow-md transition flex items-center justify-center gap-2 active:scale-98">
-            <span>Continue to Weight</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </div>
       </div>
     </div>
 
     <!-- ======================================================= -->
-    <!-- STEP 2: PATIENT WEIGHT (MANDATORY)                      -->
+    <!-- STEP 2: PATIENT WEIGHT (NO DEFAULT WEIGHT)              -->
     <!-- ======================================================= -->
     <div id="wizard-step-2" class="wizard-step hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm">
@@ -224,7 +210,7 @@
                 -
               </button>
               <div class="relative flex-1">
-                <input type="number" id="input-weight" step="0.5" min="1" max="350" placeholder="70"
+                <input type="number" id="input-weight" step="0.5" min="1" max="350" placeholder="Enter kg"
                   class="w-full text-center text-3xl font-extrabold font-mono text-slate-900 bg-slate-50 border-2 border-slate-300 focus:border-teal-600 focus:bg-white rounded-2xl py-3 px-3 transition focus:outline-none"
                   oninput="handleWeightInput(this.value)">
                 <span class="absolute right-3.5 top-4 text-xs font-bold text-slate-400 uppercase">kg</span>
@@ -234,7 +220,7 @@
               </button>
             </div>
             <p id="step2-weight-error" class="text-xs text-rose-600 font-semibold mt-2 hidden text-center">
-              Please enter a valid weight between 1 kg and 350 kg.
+              Please enter a valid weight between 1 kg and 350 kg to proceed.
             </p>
           </div>
 
@@ -267,16 +253,6 @@
             </div>
           </div>
         </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between gap-2">
-          <button onclick="goToStep(1)" class="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Drug
-          </button>
-          <button onclick="validateStep2AndContinue()" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2">
-            <span>Next: Commercial Prep</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </div>
       </div>
     </div>
 
@@ -290,7 +266,7 @@
             <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
               <i class="fa-solid fa-vial text-teal-600"></i> Commercial Preparations
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5">Indian standards & International formulations</p>
+            <p class="text-xs text-slate-500 mt-0.5">Select standard vial / ampoule formulation to proceed</p>
           </div>
           <span id="step3-drug-badge" class="px-3 py-1 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 font-extrabold text-xs">
             Drug Name
@@ -300,21 +276,11 @@
         <div class="mt-4 space-y-2.5" id="step3-preparations-list">
           <!-- Populated dynamically per drug -->
         </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between gap-2">
-          <button onclick="goToStep(2)" class="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Weight
-          </button>
-          <button onclick="goToStep(4)" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2">
-            <span>Next: Choose Syringe</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-        </div>
       </div>
     </div>
 
     <!-- ======================================================= -->
-    <!-- STEP 4: CHOOSE SYRINGE (3 SIMPLE OPTIONS)               -->
+    <!-- STEP 4: CHOOSE SYRINGE (NO DEFAULT SYRINGE PRE-PICKED)  -->
     <!-- ======================================================= -->
     <div id="wizard-step-4" class="wizard-step hidden space-y-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-sm">
@@ -322,46 +288,36 @@
           <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
             <i class="fa-solid fa-syringe text-teal-600"></i> Syringe Size
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Select standard infusion syringe capacity</p>
+          <p class="text-xs text-slate-500 mt-0.5">Tap one syringe size below to proceed</p>
         </div>
 
         <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <!-- 50 ml -->
-          <div onclick="selectSyringe(50)" id="syringe-card-50" class="syringe-card cursor-pointer p-6 rounded-2xl border-2 transition flex flex-col items-center justify-center text-center bg-teal-50/80 border-teal-600 text-slate-900 shadow-sm active:scale-98">
-            <div class="w-12 h-12 rounded-xl bg-teal-600 text-white flex items-center justify-center text-xl mb-2 font-bold shadow">
+          <div onclick="selectSyringe(50)" id="syringe-card-50" class="syringe-card cursor-pointer p-6 rounded-2xl border border-slate-300 bg-slate-50 hover:border-slate-400 transition flex flex-col items-center justify-center text-center text-slate-900 active:scale-98">
+            <div id="syringe-icon-box-50" class="w-12 h-12 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xl mb-2 font-bold transition">
               <i class="fa-solid fa-syringe"></i>
             </div>
             <div class="text-3xl font-black font-mono">50 mL</div>
-            <span class="text-xs font-bold text-teal-700 mt-1">Standard Adult ICU / OT</span>
+            <span class="text-xs font-bold text-slate-500 mt-1" id="syringe-sub-50">Standard Adult ICU / OT</span>
           </div>
 
           <!-- 20 ml -->
           <div onclick="selectSyringe(20)" id="syringe-card-20" class="syringe-card cursor-pointer p-6 rounded-2xl border border-slate-300 bg-slate-50 hover:border-slate-400 transition flex flex-col items-center justify-center text-center text-slate-900 active:scale-98">
-            <div class="w-12 h-12 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xl mb-2 font-bold">
+            <div id="syringe-icon-box-20" class="w-12 h-12 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xl mb-2 font-bold transition">
               <i class="fa-solid fa-syringe"></i>
             </div>
             <div class="text-3xl font-black font-mono">20 mL</div>
-            <span class="text-xs font-semibold text-slate-500 mt-1">Compact / Transport</span>
+            <span class="text-xs font-semibold text-slate-500 mt-1" id="syringe-sub-20">Compact / Transport</span>
           </div>
 
           <!-- 10 ml -->
           <div onclick="selectSyringe(10)" id="syringe-card-10" class="syringe-card cursor-pointer p-6 rounded-2xl border border-slate-300 bg-slate-50 hover:border-slate-400 transition flex flex-col items-center justify-center text-center text-slate-900 active:scale-98">
-            <div class="w-12 h-12 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xl mb-2 font-bold">
+            <div id="syringe-icon-box-10" class="w-12 h-12 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xl mb-2 font-bold transition">
               <i class="fa-solid fa-syringe"></i>
             </div>
             <div class="text-3xl font-black font-mono">10 mL</div>
-            <span class="text-xs font-semibold text-slate-500 mt-1">Target / Paediatric</span>
+            <span class="text-xs font-semibold text-slate-500 mt-1" id="syringe-sub-10">Target / Paediatric</span>
           </div>
-        </div>
-
-        <div class="mt-6 pt-4 border-t border-slate-200 flex items-center justify-between gap-2">
-          <button onclick="goToStep(3)" class="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Prep
-          </button>
-          <button onclick="goToStep(5)" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm rounded-xl shadow-md transition flex items-center gap-2">
-            <span>Next: Calculation & Titration</span>
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
         </div>
       </div>
     </div>
@@ -488,7 +444,7 @@
               1 ML CONTAINS:
             </div>
             <div class="text-2xl sm:text-3xl font-black font-mono text-slate-950 mt-1.5" id="display-conc-mg-mcg">
-              0.080 mg / 80.0 mcg
+              --
             </div>
             <div class="text-xs text-slate-500 mt-1 font-semibold" id="display-conc-subtext">
               Final syringe concentration
@@ -501,10 +457,10 @@
               PUMP RUNNING AT 1 ML/HR DELIVERS:
             </div>
             <div class="text-2xl sm:text-3xl font-black font-mono text-teal-800 mt-1.5" id="display-1ml-hr-dose">
-              0.019 mcg/kg/min
+              --
             </div>
             <div class="text-xs text-slate-700 mt-1 font-mono font-bold" id="display-1ml-hr-total-min">
-              Total: 1.33 mcg/min
+              --
             </div>
           </div>
         </div>
@@ -600,28 +556,41 @@
             <span class="text-xs sm:text-sm font-extrabold text-slate-900 uppercase flex items-center gap-1.5">
               <i class="fa-solid fa-book-medical text-teal-600"></i> Clinical Reference & Scenarios
             </span>
-            <span class="text-xs font-mono font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200" id="step5-ref-range">Ref: 0.01 - 3.0 mcg/kg/min</span>
+            <span class="text-xs font-mono font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200" id="step5-ref-range">Ref: Standard titrations</span>
           </div>
 
           <div class="p-3.5 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed shadow-sm" id="step5-scenario-box">
             <!-- Scenarios loaded dynamically -->
           </div>
         </div>
-
-        <!-- Bottom Step Navigation Buttons -->
-        <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-2">
-          <button onclick="goToStep(4)" class="px-4 py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Syringe
-          </button>
-          <button onclick="resetCalculator(true)" class="px-4 py-2.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition">
-            Start New Calculation
-          </button>
-        </div>
-
       </div>
     </div>
 
   </main>
+
+  <!-- ======================================================= -->
+  <!-- PERMANENTLY FIXED BOTTOM ACTION NAVIGATION BAR          -->
+  <!-- ======================================================= -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-3 shadow-[0_-4px_16px_rgba(0,0,0,0.06)]">
+    <div class="max-w-4xl mx-auto flex items-center justify-between gap-3">
+      <!-- Back button (Hidden on step 1) -->
+      <button id="bottom-bar-back-btn" onclick="handleBottomBack()" class="px-4 py-2.5 text-xs sm:text-sm font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5 active:scale-95 invisible">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span id="bottom-bar-back-label">Back</span>
+      </button>
+
+      <!-- Status indicator (Mobile friendly) -->
+      <div id="bottom-bar-status" class="hidden sm:block text-xs font-semibold text-slate-500 truncate max-w-[220px]">
+        Select drug to proceed
+      </div>
+
+      <!-- Primary Next / Continue button -->
+      <button id="bottom-bar-next-btn" onclick="handleBottomNext()" disabled class="px-6 py-2.5 sm:py-3 bg-slate-300 text-slate-500 font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center gap-2 cursor-not-allowed shadow-none">
+        <span id="bottom-bar-next-label">Continue to Weight</span>
+        <i id="bottom-bar-next-icon" class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </nav>
 
   <!-- ======================================================= -->
   <!-- MODAL: SETTINGS, DOCTOR PROFILE & FORMULARY             -->
@@ -1877,21 +1846,21 @@
     let currentStep = 1;
     let selectedCategoryId = 'all';
 
-    // MANDATORY REQUIREMENT: Absolutely NO drug pre-selected on initial load
+    // MANDATORY REQUIREMENT: Absolutely NO drug, NO weight, NO prep, and NO syringe pre-selected
     let appState = {
       selectedDrugId: null,
       selectedPrepId: null,
-      weight: 70,
+      weight: null,
       age: '',
       sex: '',
-      syringeVolume: 50,
-      drugMl: 4.0,
-      diluentMl: 46.0,
+      syringeVolume: null,
+      drugMl: 0,
+      diluentMl: 0,
       diluentType: 'Normal Saline (0.9% NaCl)',
       calcMode: 'forward',
       pumpRate: 5.0,
-      concMgPerMl: 0.08,
-      concMcgPerMl: 80.0,
+      concMgPerMl: 0,
+      concMcgPerMl: 0,
       selectedMetric: 'mcg/kg/min'
     };
 
@@ -1909,6 +1878,8 @@
       renderDoctorData();
       renderStep1Drugs();
       updateStepBreadcrumbs();
+      updateStickyCaseSummary();
+      updateBottomBar();
       renderSettingsFormularyTable();
     });
 
@@ -1927,18 +1898,26 @@
     }
 
     function saveAppState() {
-      // state persistent
+      // transient state kept in memory
     }
 
     /* STEP NAVIGATION */
     function goToStep(stepNumber) {
-      if (!appState.selectedDrugId && stepNumber > 1) {
+      if (stepNumber > 1 && !appState.selectedDrugId) {
         showToast("Please choose a drug first");
         stepNumber = 1;
       }
       if (stepNumber > 2 && (!appState.weight || appState.weight <= 0)) {
         showToast("Please enter a valid weight");
         stepNumber = 2;
+      }
+      if (stepNumber > 3 && !appState.selectedPrepId) {
+        showToast("Please select a commercial preparation");
+        stepNumber = 3;
+      }
+      if (stepNumber > 4 && !appState.syringeVolume) {
+        showToast("Please choose a syringe size");
+        stepNumber = 4;
       }
 
       currentStep = stepNumber;
@@ -1949,7 +1928,7 @@
 
       if (stepNumber === 1) renderStep1Drugs();
       else if (stepNumber === 2) {
-        document.getElementById('input-weight').value = appState.weight || '';
+        document.getElementById('input-weight').value = appState.weight !== null ? appState.weight : '';
         document.getElementById('input-age').value = appState.age || '';
         document.getElementById('input-sex').value = appState.sex || '';
       } else if (stepNumber === 3) renderStep3Preparations();
@@ -1958,31 +1937,181 @@
 
       updateStepBreadcrumbs();
       updateStickyCaseSummary();
+      updateBottomBar();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    /* UPDATED: DYNAMIC STICKY BAR THAT ONLY SHOWS ENTERED/SELECTED ITEMS */
     function updateStickyCaseSummary() {
       const summaryBar = document.getElementById('sticky-case-summary');
       const drug = getCurrentDrug();
 
-      // Only display sticky summary bar once a drug is chosen
-      if (!drug) {
+      // If nothing has been chosen yet, hide entire sticky case bar
+      if (!drug && !appState.weight && !appState.syringeVolume && !appState.selectedPrepId) {
         summaryBar.classList.add('hidden');
         return;
       }
 
       summaryBar.classList.remove('hidden');
 
-      const prep = getCurrentPrep();
-      document.getElementById('sticky-chip-drug').textContent = drug.name;
-      document.getElementById('sticky-chip-weight').textContent = `${appState.weight || 70} kg`;
-      document.getElementById('sticky-chip-syringe').textContent = `${appState.syringeVolume || 50} mL`;
-      
-      if (prep) {
-        // Compact label for sticky bar
-        document.getElementById('sticky-chip-prep').textContent = `${prep.label} (${prep.strengthVal} ${prep.strengthUnit})`;
+      // 1. Drug Chip (only if drug selected)
+      const drugBtn = document.getElementById('sticky-chip-drug-btn');
+      if (drug) {
+        drugBtn.classList.remove('hidden');
+        document.getElementById('sticky-chip-drug').textContent = drug.name;
       } else {
-        document.getElementById('sticky-chip-prep').textContent = '--';
+        drugBtn.classList.add('hidden');
+      }
+
+      // 2. Weight Chip (only if user entered weight)
+      const wtBtn = document.getElementById('sticky-chip-weight-btn');
+      if (appState.weight && appState.weight > 0) {
+        wtBtn.classList.remove('hidden');
+        document.getElementById('sticky-chip-weight').textContent = `${appState.weight} kg`;
+      } else {
+        wtBtn.classList.add('hidden');
+      }
+
+      // 3. Commercial Prep Chip (only if user selected a prep)
+      const prepBtn = document.getElementById('sticky-chip-prep-btn');
+      const prep = getCurrentPrep();
+      if (appState.selectedPrepId && prep) {
+        prepBtn.classList.remove('hidden');
+        document.getElementById('sticky-chip-prep').textContent = `${prep.label}`;
+      } else {
+        prepBtn.classList.add('hidden');
+      }
+
+      // 4. Syringe Chip (only if user chose syringe)
+      const syrBtn = document.getElementById('sticky-chip-syringe-btn');
+      if (appState.syringeVolume) {
+        syrBtn.classList.remove('hidden');
+        document.getElementById('sticky-chip-syringe').textContent = `${appState.syringeVolume} mL`;
+      } else {
+        syrBtn.classList.add('hidden');
+      }
+    }
+
+    /* FIXED BOTTOM NAVIGATION BAR STATE HANDLER */
+    function updateBottomBar() {
+      const backBtn = document.getElementById('bottom-bar-back-btn');
+      const nextBtn = document.getElementById('bottom-bar-next-btn');
+      const nextLabel = document.getElementById('bottom-bar-next-label');
+      const nextIcon = document.getElementById('bottom-bar-next-icon');
+      const statusText = document.getElementById('bottom-bar-status');
+
+      if (currentStep === 1) {
+        backBtn.classList.add('invisible');
+        nextLabel.textContent = "Continue to Weight";
+        nextIcon.className = "fa-solid fa-arrow-right";
+
+        if (appState.selectedDrugId) {
+          enableBottomNext("Continue to Weight");
+          statusText.textContent = `Selected: ${getCurrentDrug()?.name}`;
+        } else {
+          disableBottomNext("Select a drug to proceed");
+          statusText.textContent = "Please select a drug above";
+        }
+      } else if (currentStep === 2) {
+        backBtn.classList.remove('invisible');
+        document.getElementById('bottom-bar-back-label').textContent = "Drug";
+        nextLabel.textContent = "Continue to Commercial Prep";
+        nextIcon.className = "fa-solid fa-arrow-right";
+
+        if (appState.weight && appState.weight > 0 && appState.weight <= 350) {
+          enableBottomNext("Continue to Commercial Prep");
+          statusText.textContent = `Weight: ${appState.weight} kg`;
+        } else {
+          disableBottomNext("Enter weight to proceed");
+          statusText.textContent = "Weight is mandatory (kg)";
+        }
+      } else if (currentStep === 3) {
+        backBtn.classList.remove('invisible');
+        document.getElementById('bottom-bar-back-label').textContent = "Weight";
+        nextLabel.textContent = "Continue to Syringe";
+        nextIcon.className = "fa-solid fa-arrow-right";
+
+        if (appState.selectedPrepId) {
+          enableBottomNext("Continue to Syringe");
+          statusText.textContent = "Preparation selected";
+        } else {
+          disableBottomNext("Select a preparation to proceed");
+          statusText.textContent = "Please tap a preparation";
+        }
+      } else if (currentStep === 4) {
+        backBtn.classList.remove('invisible');
+        document.getElementById('bottom-bar-back-label').textContent = "Prep";
+        nextLabel.textContent = "Continue to Calculation";
+        nextIcon.className = "fa-solid fa-arrow-right";
+
+        if (appState.syringeVolume) {
+          enableBottomNext("Continue to Calculation");
+          statusText.textContent = `Syringe: ${appState.syringeVolume} mL`;
+        } else {
+          disableBottomNext("Choose syringe to proceed");
+          statusText.textContent = "Please choose a syringe size";
+        }
+      } else if (currentStep === 5) {
+        backBtn.classList.remove('invisible');
+        document.getElementById('bottom-bar-back-label').textContent = "Syringe";
+        nextLabel.textContent = "Start New Calculation";
+        nextIcon.className = "fa-solid fa-rotate-left";
+        enableBottomNext("Start New Calculation", true);
+        statusText.textContent = "Active Calculation & Titration";
+      }
+    }
+
+    function enableBottomNext(label, isReset = false) {
+      const nextBtn = document.getElementById('bottom-bar-next-btn');
+      const nextLabel = document.getElementById('bottom-bar-next-label');
+      nextBtn.disabled = false;
+      nextLabel.textContent = label;
+      nextBtn.classList.remove('bg-slate-300', 'text-slate-500', 'cursor-not-allowed');
+
+      if (isReset) {
+        nextBtn.className = "px-6 py-2.5 sm:py-3 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center gap-2 active:scale-95 shadow-md";
+      } else {
+        nextBtn.className = "px-6 py-2.5 sm:py-3 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center gap-2 active:scale-95 shadow-md";
+      }
+    }
+
+    function disableBottomNext(label) {
+      const nextBtn = document.getElementById('bottom-bar-next-btn');
+      const nextLabel = document.getElementById('bottom-bar-next-label');
+      nextBtn.disabled = true;
+      nextLabel.textContent = label;
+      nextBtn.className = "px-6 py-2.5 sm:py-3 bg-slate-200 text-slate-400 font-extrabold text-xs sm:text-sm rounded-xl transition flex items-center gap-2 cursor-not-allowed shadow-none";
+    }
+
+    function handleBottomBack() {
+      if (currentStep > 1) {
+        goToStep(currentStep - 1);
+      }
+    }
+
+    function handleBottomNext() {
+      if (currentStep === 1) {
+        if (!appState.selectedDrugId) {
+          showToast("Please choose a drug first");
+          return;
+        }
+        goToStep(2);
+      } else if (currentStep === 2) {
+        validateStep2AndContinue();
+      } else if (currentStep === 3) {
+        if (!appState.selectedPrepId) {
+          showToast("Please choose a commercial preparation");
+          return;
+        }
+        goToStep(4);
+      } else if (currentStep === 4) {
+        if (!appState.syringeVolume) {
+          showToast("Please choose a syringe size");
+          return;
+        }
+        goToStep(5);
+      } else if (currentStep === 5) {
+        resetCalculator(true);
       }
     }
 
@@ -2012,13 +2141,8 @@
 
     function getCurrentPrep() {
       const drug = getCurrentDrug();
-      if (!drug) return null;
-      let prep = drug.preparations.find(p => p.id === appState.selectedPrepId);
-      if (!prep && drug.preparations.length > 0) {
-        prep = drug.preparations[0];
-        appState.selectedPrepId = prep.id;
-      }
-      return prep;
+      if (!drug || !appState.selectedPrepId) return null;
+      return drug.preparations.find(p => p.id === appState.selectedPrepId) || null;
     }
 
     /* STEP 1: CHOOSE DRUG (LIGHT THEME, NO DEFAULT PRE-SELECTION) */
@@ -2077,25 +2201,15 @@
         `;
         container.appendChild(card);
       });
-
-      const banner = document.getElementById('step1-selection-banner');
-      const activeDrug = getCurrentDrug();
-      if (activeDrug) {
-        banner.classList.remove('hidden');
-        document.getElementById('step1-selected-name').textContent = activeDrug.name;
-      } else {
-        banner.classList.add('hidden');
-      }
     }
 
     function selectSingleDrug(drugId) {
       appState.selectedDrugId = drugId;
+      // Do NOT default-select preparation: user must pick in Step 3
+      appState.selectedPrepId = null;
+
       const drug = getCurrentDrug();
-      if (drug && drug.preparations.length > 0) {
-        appState.selectedPrepId = drug.preparations[0].id;
-        appState.drugMl = drug.preparations[0].defaultMlToDraw || 4;
-        appState.diluentMl = Math.max(0, appState.syringeVolume - appState.drugMl);
-        
+      if (drug) {
         if (drug.unit === 'mcg/min') {
           appState.selectedMetric = 'mcg/min';
         } else if (drug.unit === 'mg/hr') {
@@ -2104,10 +2218,11 @@
           appState.selectedMetric = 'mcg/kg/min';
         }
       }
+
       saveAppState();
       renderStep1Drugs();
       updateStickyCaseSummary();
-      recalculateForwardMath();
+      updateBottomBar();
     }
 
     /* STEP 2: PATIENT WEIGHT */
@@ -2116,16 +2231,18 @@
       if (!isNaN(parsed) && parsed > 0 && parsed <= 350) {
         appState.weight = parsed;
         document.getElementById('step2-weight-error').classList.add('hidden');
-        saveAppState();
-        updateStickyCaseSummary();
-        recalculateForwardMath();
       } else {
         appState.weight = null;
       }
+      saveAppState();
+      updateStickyCaseSummary();
+      updateBottomBar();
+      recalculateForwardMath();
     }
 
     function adjustWeight(delta) {
-      let current = parseFloat(document.getElementById('input-weight').value) || 70;
+      let current = parseFloat(document.getElementById('input-weight').value);
+      if (isNaN(current)) current = 70; // Sensible starting point on stepper tap
       current = Math.max(1, Math.min(350, current + delta));
       document.getElementById('input-weight').value = current;
       handleWeightInput(current);
@@ -2148,6 +2265,7 @@
       appState.age = document.getElementById('input-age').value.trim();
       appState.sex = document.getElementById('input-sex').value;
       saveAppState();
+      updateStickyCaseSummary();
       goToStep(3);
     }
 
@@ -2160,9 +2278,8 @@
       const container = document.getElementById('step3-preparations-list');
       container.innerHTML = '';
 
-      drug.preparations.forEach((prep, idx) => {
-        const isSelected = appState.selectedPrepId === prep.id || (!appState.selectedPrepId && idx === 0);
-        if (isSelected) appState.selectedPrepId = prep.id;
+      drug.preparations.forEach((prep) => {
+        const isSelected = appState.selectedPrepId === prep.id;
 
         const card = document.createElement('div');
         card.className = `p-3.5 sm:p-4 rounded-xl border-2 cursor-pointer transition select-none flex items-center justify-between active:scale-98 ${
@@ -2199,49 +2316,48 @@
     function selectPrep(prepId) {
       appState.selectedPrepId = prepId;
       const prep = getCurrentPrep();
-      if (prep) {
+      if (prep && appState.syringeVolume) {
         appState.drugMl = prep.defaultMlToDraw || prep.ampVol || 4;
         appState.diluentMl = Math.max(0, appState.syringeVolume - appState.drugMl);
       }
       saveAppState();
       renderStep3Preparations();
       updateStickyCaseSummary();
+      updateBottomBar();
       recalculateForwardMath();
     }
 
-    /* STEP 4: CHOOSE SYRINGE */
+    /* STEP 4: CHOOSE SYRINGE (NO DEFAULT PRE-SELECTION) */
     function selectSyringe(vol) {
       appState.syringeVolume = vol;
-      if (appState.drugMl >= vol) {
-        appState.drugMl = vol / 2;
-      }
-      appState.diluentMl = vol - appState.drugMl;
+      const prep = getCurrentPrep();
+      const defaultDraw = prep ? (prep.defaultMlToDraw || prep.ampVol || 4) : 4;
+      
+      appState.drugMl = Math.min(defaultDraw, vol);
+      appState.diluentMl = Math.max(0, vol - appState.drugMl);
+
       saveAppState();
       renderStep4Syringe();
       updateStickyCaseSummary();
-      recalculateForwardMath();
-    }
-
-    /* STEP 4: CHOOSE SYRINGE */
-    function selectSyringe(vol) {
-      appState.syringeVolume = vol;
-      if (appState.drugMl >= vol) {
-        appState.drugMl = vol / 2;
-      }
-      appState.diluentMl = vol - appState.drugMl;
-      saveAppState();
-      renderStep4Syringe();
+      updateBottomBar();
       recalculateForwardMath();
     }
 
     function renderStep4Syringe() {
       [50, 20, 10].forEach(vol => {
         const card = document.getElementById(`syringe-card-${vol}`);
+        const iconBox = document.getElementById(`syringe-icon-box-${vol}`);
+        const sub = document.getElementById(`syringe-sub-${vol}`);
         if (!card) return;
+
         if (appState.syringeVolume === vol) {
-          card.className = "syringe-card cursor-pointer p-6 rounded-2xl border-2 transition flex flex-col items-center justify-center text-center bg-teal-50/80 border-teal-600 text-slate-900 shadow-sm active:scale-98";
+          card.className = "syringe-card cursor-pointer p-6 rounded-2xl border-2 transition flex flex-col items-center justify-center text-center bg-teal-50/90 border-teal-600 text-slate-900 shadow-sm ring-1 ring-teal-600 active:scale-98";
+          if (iconBox) iconBox.className = "w-12 h-12 rounded-xl bg-teal-600 text-white flex items-center justify-center text-xl mb-2 font-bold shadow";
+          if (sub) sub.className = "text-xs font-bold text-teal-800 mt-1";
         } else {
           card.className = "syringe-card cursor-pointer p-6 rounded-2xl border border-slate-300 bg-slate-50 hover:border-slate-400 transition flex flex-col items-center justify-center text-center text-slate-900 active:scale-98";
+          if (iconBox) iconBox.className = "w-12 h-12 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center text-xl mb-2 font-bold";
+          if (sub) sub.className = "text-xs font-semibold text-slate-500 mt-1";
         }
       });
     }
@@ -2252,10 +2368,17 @@
       const prep = getCurrentPrep();
       if (!prep || !drug) return;
 
+      const syrVol = appState.syringeVolume || 50;
+
+      if (!appState.drugMl || appState.drugMl <= 0) {
+        appState.drugMl = prep.defaultMlToDraw || prep.ampVol || 4;
+        appState.diluentMl = Math.max(0, syrVol - appState.drugMl);
+      }
+
       document.getElementById('forward-drug-stock-strength').textContent = `${prep.strengthVal} ${prep.strengthUnit}`;
       document.getElementById('input-drug-ml').value = appState.drugMl;
       document.getElementById('input-diluent-ml').value = appState.diluentMl;
-      document.getElementById('forward-syringe-capacity-badge').textContent = `${appState.syringeVolume} mL`;
+      document.getElementById('forward-syringe-capacity-badge').textContent = `${syrVol} mL`;
 
       document.getElementById('live-pump-speed').value = appState.pumpRate.toFixed(1);
       document.getElementById('slider-live-rate').value = Math.min(appState.pumpRate, 30);
@@ -2270,6 +2393,7 @@
       recalculateForwardMath();
       renderSelectedMetricButtons();
       recalculateLivePumpDoses();
+      updateBottomBar();
     }
 
     function setCalcMode(mode) {
@@ -2295,9 +2419,10 @@
 
     function handleDrugVolumeInput(val) {
       const parsed = parseFloat(val);
+      const syrVol = appState.syringeVolume || 50;
       if (!isNaN(parsed) && parsed >= 0) {
         appState.drugMl = parsed;
-        appState.diluentMl = Math.max(0, appState.syringeVolume - parsed);
+        appState.diluentMl = Math.max(0, syrVol - parsed);
         document.getElementById('input-diluent-ml').value = appState.diluentMl.toFixed(1);
         saveAppState();
         recalculateForwardMath();
@@ -2316,12 +2441,13 @@
     }
 
     function autoTopUpDiluent() {
-      appState.diluentMl = Math.max(0, appState.syringeVolume - appState.drugMl);
+      const syrVol = appState.syringeVolume || 50;
+      appState.diluentMl = Math.max(0, syrVol - appState.drugMl);
       document.getElementById('input-diluent-ml').value = appState.diluentMl.toFixed(1);
       saveAppState();
       recalculateForwardMath();
       recalculateLivePumpDoses();
-      showToast(`Auto-filled to ${appState.syringeVolume} mL`);
+      showToast(`Auto-filled to ${syrVol} mL`);
     }
 
     function recalculateForwardMath() {
@@ -2329,9 +2455,10 @@
       const prep = getCurrentPrep();
       if (!drug || !prep) return;
 
+      const syrVol = appState.syringeVolume || 50;
       const drugMl = parseFloat(appState.drugMl) || 0;
       const diluentMl = parseFloat(appState.diluentMl) || 0;
-      const totalSyringeVol = drugMl + diluentMl > 0 ? (drugMl + diluentMl) : appState.syringeVolume;
+      const totalSyringeVol = drugMl + diluentMl > 0 ? (drugMl + diluentMl) : syrVol;
       const patientWeight = parseFloat(appState.weight) || 70;
 
       let totalDrugInSyringeMg = 0;
@@ -2471,7 +2598,6 @@
       const drug = getCurrentDrug();
       const doseUnitSelect = document.getElementById('reverse-target-dose-unit-select');
       
-      // Auto-set the dropdown to match the drug's preferred unit or current metric
       if (doseUnitSelect) {
         if (drug && drug.unit && ['mcg/kg/min', 'mcg/min', 'mg/hr', 'mg/kg/hr', 'units/min'].includes(drug.unit)) {
           doseUnitSelect.value = drug.unit;
@@ -2480,8 +2606,8 @@
         }
       }
 
-      document.getElementById('reverse-target-conc').value = appState.concMcgPerMl.toFixed(1);
-      calculateReverseFromConc(appState.concMcgPerMl);
+      document.getElementById('reverse-target-conc').value = appState.concMcgPerMl > 0 ? appState.concMcgPerMl.toFixed(1) : '80.0';
+      calculateReverseFromConc(parseFloat(document.getElementById('reverse-target-conc').value));
     }
 
     function handleReverseDoseUnitChange() {
@@ -2497,7 +2623,9 @@
 
       const unit = document.getElementById('reverse-conc-unit').value;
       const prep = getCurrentPrep();
-      const syringeVol = appState.syringeVolume;
+      const syringeVol = appState.syringeVolume || 50;
+
+      if (!prep) return;
 
       let targetTotalMcg = 0;
       if (unit === 'mcg/ml') targetTotalMcg = targetConc * syringeVol;
@@ -2538,34 +2666,27 @@
       let targetConcMgPerMl = 0;
       let targetConcUnitsPerMl = 0;
 
-      // 1 mL/hr delivery means hourly delivery = concentration in 1 mL:
-      // Rate = 1 mL/hr
       if (selectedUnit === 'mcg/kg/min') {
-        // Dose (mcg/kg/min) * weight (kg) * 60 min = total mcg delivered in 1 hr (in 1 mL)
         targetConcMcgPerMl = targetDose * weight * 60;
         document.getElementById('reverse-conc-unit').value = 'mcg/ml';
         document.getElementById('reverse-target-conc').value = targetConcMcgPerMl.toFixed(1);
         calculateReverseFromConc(targetConcMcgPerMl);
       } else if (selectedUnit === 'mcg/min') {
-        // Dose (mcg/min) * 60 min = total mcg delivered in 1 hr (in 1 mL)
         targetConcMcgPerMl = targetDose * 60;
         document.getElementById('reverse-conc-unit').value = 'mcg/ml';
         document.getElementById('reverse-target-conc').value = targetConcMcgPerMl.toFixed(1);
         calculateReverseFromConc(targetConcMcgPerMl);
       } else if (selectedUnit === 'mg/hr') {
-        // Dose (mg/hr) delivered in 1 mL/hr = target concentration is Dose mg/mL
         targetConcMgPerMl = targetDose;
         document.getElementById('reverse-conc-unit').value = 'mg/ml';
         document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(3);
         calculateReverseFromConc(targetConcMgPerMl);
       } else if (selectedUnit === 'mg/kg/hr') {
-        // Dose (mg/kg/hr) * weight (kg) = total mg delivered in 1 hr (in 1 mL)
         targetConcMgPerMl = targetDose * weight;
         document.getElementById('reverse-conc-unit').value = 'mg/ml';
         document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(3);
         calculateReverseFromConc(targetConcMgPerMl);
       } else if (selectedUnit === 'units/min') {
-        // Dose (units/min) * 60 = total units delivered in 1 hr (in 1 mL)
         targetConcUnitsPerMl = targetDose * 60;
         document.getElementById('reverse-conc-unit').value = 'units/ml';
         document.getElementById('reverse-target-conc').value = targetConcUnitsPerMl.toFixed(3);
@@ -2683,13 +2804,13 @@
       localStorage.setItem(STORAGE_KEY_FORMULARY, JSON.stringify(drugsFormulary));
       
       appState.selectedDrugId = newId;
-      appState.selectedPrepId = newDrug.preparations[0].id;
-      appState.drugMl = ampVol;
-      appState.diluentMl = Math.max(0, appState.syringeVolume - ampVol);
+      appState.selectedPrepId = null; // Let user choose prep in Step 3
       saveAppState();
 
       renderStep1Drugs();
       renderSettingsFormularyTable();
+      updateStickyCaseSummary();
+      updateBottomBar();
       showToast(`Added "${name}" to formulary`);
       closeModal('settings-modal');
       goToStep(1);
@@ -2729,6 +2850,8 @@
       }
       renderSettingsFormularyTable();
       renderStep1Drugs();
+      updateStickyCaseSummary();
+      updateBottomBar();
       showToast("Drug removed from formulary");
     }
 
@@ -2740,33 +2863,42 @@
       saveAppState();
       renderSettingsFormularyTable();
       renderStep1Drugs();
+      updateStickyCaseSummary();
+      updateBottomBar();
       showToast("Restored default formulary");
     }
 
-    /* RESET CALCULATOR (CLEARS SELECTION BACK TO INITIAL STATE) */
+    /* RESET CALCULATOR (CLEARS SELECTION BACK TO INITIAL UNSELECTED STATE) */
     function resetCalculator(showToastMsg = true) {
       appState = {
         selectedDrugId: null,
         selectedPrepId: null,
-        weight: 70,
+        weight: null,
         age: '',
         sex: '',
-        syringeVolume: 50,
-        drugMl: 4.0,
-        diluentMl: 46.0,
+        syringeVolume: null,
+        drugMl: 0,
+        diluentMl: 0,
         diluentType: 'Normal Saline (0.9% NaCl)',
         calcMode: 'forward',
         pumpRate: 5.0,
-        concMgPerMl: 0.08,
-        concMcgPerMl: 80.0,
+        concMgPerMl: 0,
+        concMcgPerMl: 0,
         selectedMetric: 'mcg/kg/min'
       };
-      document.getElementById('input-weight').value = 70;
-      document.getElementById('drug-search-input').value = '';
+      
+      const weightInput = document.getElementById('input-weight');
+      if (weightInput) weightInput.value = '';
+      
+      const searchInput = document.getElementById('drug-search-input');
+      if (searchInput) searchInput.value = '';
+
       selectedCategoryId = 'all';
       filterCategory('all');
       renderStep1Drugs();
+      renderStep4Syringe();
       updateStickyCaseSummary();
+      updateBottomBar();
       goToStep(1);
       if (showToastMsg) showToast("Reset to initial state");
     }
