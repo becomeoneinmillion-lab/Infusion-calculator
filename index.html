@@ -170,6 +170,9 @@
           <button onclick="filterCategory('analgesics')" class="cat-pill whitespace-nowrap px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-analgesics">Analgesics</button>
           <button onclick="filterCategory('relaxants')" class="cat-pill whitespace-nowrap px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-relaxants">Muscle Relaxants</button>
           <button onclick="filterCategory('antihypertensives')" class="cat-pill whitespace-nowrap px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-antihypertensives">Antihypertensives</button>
+          <button onclick="filterCategory('antiarrhythmics')" class="cat-pill whitespace-nowrap px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-antiarrhythmics">Antiarrhythmics</button>
+          <button onclick="filterCategory('obstetric_emergency')" class="cat-pill whitespace-nowrap px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-obstetric_emergency">Magnesium / Obstetric</button>
+          <button onclick="filterCategory('antidotes')" class="cat-pill whitespace-nowrap px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-antidotes">Antidotes & LAST</button>
         </div>
 
         <!-- Search Input -->
@@ -418,8 +421,11 @@
                   <option value="mcg/kg/min">mcg/kg/min</option>
                   <option value="mcg/min">mcg/min</option>
                   <option value="mg/hr">mg/hr</option>
+                  <option value="mg/min">mg/min</option>
                   <option value="mg/kg/hr">mg/kg/hr</option>
+                  <option value="g/hr">g/hr</option>
                   <option value="units/min">units/min</option>
+                  <option value="ml/kg/min">mL/kg/min</option>
                 </select>
               </div>
             </div>
@@ -519,7 +525,7 @@
                 CHOOSE DISPLAY METRIC:
               </span>
 
-              <div class="inline-flex rounded-xl bg-slate-200 p-1 border border-slate-300 w-full sm:w-auto">
+              <div class="inline-flex rounded-xl bg-slate-200 p-1 border border-slate-300 w-full sm:w-auto overflow-x-auto touch-scroll">
                 <button type="button" onclick="selectDisplayMetric('mcg/kg/min')" id="metric-btn-mcg-kg-min"
                   class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold transition bg-teal-600 text-white shadow">
                   mcg/kg/min
@@ -531,6 +537,10 @@
                 <button type="button" onclick="selectDisplayMetric('mg/hr')" id="metric-btn-mg-hr"
                   class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition">
                   mg/hr
+                </button>
+                <button type="button" onclick="selectDisplayMetric('custom')" id="metric-btn-custom"
+                  class="hidden px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition">
+                  Dosing Unit
                 </button>
               </div>
             </div>
@@ -676,6 +686,9 @@
                   <option value="analgesics">Analgesics</option>
                   <option value="relaxants">Muscle Relaxants</option>
                   <option value="antihypertensives">Antihypertensives</option>
+                  <option value="antiarrhythmics">Antiarrhythmics</option>
+                  <option value="obstetric_emergency">Magnesium / Obstetric</option>
+                  <option value="antidotes">Antidotes & LAST</option>
                 </select>
               </div>
 
@@ -684,9 +697,12 @@
                 <select id="form-drug-unit" required class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 font-mono focus:bg-white focus:outline-none">
                   <option value="mcg/kg/min">mcg/kg/min</option>
                   <option value="mcg/min">mcg/min</option>
-                  <option value="mcg/kg/hr">mcg/kg/hr</option>
+                  <option value="mg/hr">mg/hr</option>
+                  <option value="mg/min">mg/min</option>
                   <option value="mg/kg/hr">mg/kg/hr</option>
+                  <option value="g/hr">g/hr</option>
                   <option value="units/min">units/min</option>
+                  <option value="ml/kg/min">mL/kg/min</option>
                 </select>
               </div>
             </div>
@@ -1837,6 +1853,190 @@
           title: 'Preeclampsia & Refractory Hypertension',
           body: '<strong>Direct Arterial Dilator:</strong> Onset 10-20 min. Reflex tachycardia may occur; often co-administered with beta-blockers.'
         }
+      },
+      {
+        id: 'amiodarone',
+        name: 'Amiodarone',
+        category: 'antiarrhythmics',
+        unit: 'mg/min',
+        preparations: [
+          {
+            id: 'amio_150mg_3ml',
+            label: '3 mL Ampoule (150 mg/3 mL = 50 mg/mL)',
+            sublabel: 'Standard India (Cordarone / Neon / Sanofi 150 mg) & Worldwide',
+            strengthVal: 50,
+            strengthUnit: 'mg/ml',
+            ampVol: 3,
+            totalContent: '150 mg / 3 mL',
+            defaultMlToDraw: 6,
+            recommendedDiluent: '5% Dextrose (D5W) ONLY'
+          },
+          {
+            id: 'amio_450mg_9ml',
+            label: '9 mL Ampoule (450 mg/9 mL = 50 mg/mL)',
+            sublabel: 'High-volume concentrated ampoule (3 ampoules equivalent)',
+            strengthVal: 50,
+            strengthUnit: 'mg/ml',
+            ampVol: 9,
+            totalContent: '450 mg / 9 mL',
+            defaultMlToDraw: 9,
+            recommendedDiluent: '5% Dextrose (D5W) ONLY'
+          },
+          {
+            id: 'amio_300mg_6ml',
+            label: '6 mL Prep (300 mg / 6 mL = 50 mg/mL)',
+            sublabel: 'Standard double ampoule draw for 300 mg syringe preparation',
+            strengthVal: 50,
+            strengthUnit: 'mg/ml',
+            ampVol: 6,
+            totalContent: '300 mg / 6 mL',
+            defaultMlToDraw: 6,
+            recommendedDiluent: '5% Dextrose (D5W) ONLY'
+          }
+        ],
+        range: '0.5 - 1.0 mg/min (30 - 60 mg/hr)',
+        scenarios: {
+          title: 'VF/Pulseless VT vs Stable Tachyarrhythmias & Atrial Fibrillation',
+          body: '<strong>1. Cardiac Arrest (Shock-Refractory VF / Pulseless VT):</strong> 300 mg IV push after 3rd shock; subsequent 150 mg IV push if persistent.<br><strong>2. Stable VT / Atrial Fibrillation with Rapid Ventricular Response:</strong><br>&bull; <em>Rapid Loading:</em> 150 mg IV over 10 min (15 mg/min).<br>&bull; <em>Slow Infusion:</em> 1 mg/min (60 mg/hr) for first 6 hours (total 360 mg).<br>&bull; <em>Maintenance Infusion:</em> 0.5 mg/min (30 mg/hr) for next 18 hours (total 540 mg). Total 24h dose = ~1050 mg (Max recommended 2.2 g/24hr).<br><strong>Critical Warning:</strong> Must be diluted in <strong>5% Dextrose (D5W) ONLY</strong>. Precipitates and causes phlebitis in Normal Saline at low concentrations (&lt;0.6 mg/mL). Use central line for infusions &gt;2 hours when possible.'
+        }
+      },
+      {
+        id: 'lignocaine_antiarrhythmic',
+        name: 'Lignocaine (Lidocaine Antiarrhythmic)',
+        category: 'antiarrhythmics',
+        unit: 'mcg/kg/min',
+        preparations: [
+          {
+            id: 'ligno_2pct_5ml',
+            label: '5 mL Ampoule 2% (100 mg/5 mL = 20 mg/mL)',
+            sublabel: 'Standard India (Xylocard 2% / Neon Lox 2% preservative-free)',
+            strengthVal: 20,
+            strengthUnit: 'mg/ml',
+            ampVol: 5,
+            totalContent: '100 mg / 5 mL',
+            defaultMlToDraw: 25,
+            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline'
+          },
+          {
+            id: 'ligno_2pct_30ml',
+            label: '30 mL Vial 2% (600 mg/30 mL = 20 mg/mL)',
+            sublabel: 'Multi-dose preservative-free antiarrhythmic vial',
+            strengthVal: 20,
+            strengthUnit: 'mg/ml',
+            ampVol: 30,
+            totalContent: '600 mg / 30 mL',
+            defaultMlToDraw: 25,
+            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline'
+          },
+          {
+            id: 'ligno_2pct_50ml',
+            label: '50 mL Vial 2% (1000 mg/50 mL = 20 mg/mL)',
+            sublabel: 'Concentrated pure 1 g / 50 mL undiluted syringe pump vial',
+            strengthVal: 20,
+            strengthUnit: 'mg/ml',
+            ampVol: 50,
+            totalContent: '1000 mg / 50 mL',
+            defaultMlToDraw: 50,
+            recommendedDiluent: 'Pure Undiluted'
+          }
+        ],
+        range: '1 - 4 mg/min (20 - 50 mcg/kg/min)',
+        scenarios: {
+          title: 'Ventricular Tachycardia & Cardiac Arrest',
+          body: '<strong>1. Initial IV Bolus:</strong> 1.0 - 1.5 mg/kg IV push. Repeat 0.5 - 0.75 mg/kg every 5-10 min if refractory (Max bolus 3 mg/kg).<br><strong>2. Continuous Infusion:</strong> 1 - 4 mg/min (approx 20 - 50 mcg/kg/min).<br>&bull; <em>1 mg/min = 60 mg/hr</em><br>&bull; <em>2 mg/min = 120 mg/hr</em><br>&bull; <em>3 mg/min = 180 mg/hr</em><br>&bull; <em>4 mg/min = 240 mg/hr</em><br><strong>Dose Adjustment:</strong> Reduce maintenance infusion by 50% in patients with cardiogenic shock, congestive heart failure (decreased volume of distribution), or severe hepatic dysfunction.'
+        }
+      },
+      {
+        id: 'magnesium_sulphate',
+        name: 'Magnesium Sulphate (MgSO4)',
+        category: 'obstetric_emergency',
+        unit: 'g/hr',
+        preparations: [
+          {
+            id: 'mgso4_50pct_2ml',
+            label: '2 mL Ampoule 50% w/v (1 g / 2 mL = 500 mg/mL)',
+            sublabel: 'Ubiquitous Standard India (Neon / Troikaa / Samarth 50% MgSO4)',
+            strengthVal: 500,
+            strengthUnit: 'mg/ml',
+            ampVol: 2,
+            totalContent: '1000 mg (1 g) / 2 mL',
+            defaultMlToDraw: 10,
+            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline'
+          },
+          {
+            id: 'mgso4_50pct_5ml',
+            label: '5 mL Vial 50% w/v (2.5 g / 5 mL = 500 mg/mL)',
+            sublabel: 'Standard 2.5 g commercial vial',
+            strengthVal: 500,
+            strengthUnit: 'mg/ml',
+            ampVol: 5,
+            totalContent: '2500 mg (2.5 g) / 5 mL',
+            defaultMlToDraw: 10,
+            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline'
+          },
+          {
+            id: 'mgso4_10pct_10ml',
+            label: '10 mL Ampoule 10% w/v (1 g / 10 mL = 100 mg/mL)',
+            sublabel: 'Dilute 10% formulation (100 mg/mL)',
+            strengthVal: 100,
+            strengthUnit: 'mg/ml',
+            ampVol: 10,
+            totalContent: '1000 mg (1 g) / 10 mL',
+            defaultMlToDraw: 50,
+            recommendedDiluent: 'Pure or Diluted'
+          }
+        ],
+        range: '1.0 - 2.0 g/hr (Maintenance)',
+        scenarios: {
+          title: 'Eclampsia (Zuspan) vs Fetal Neuroprotection vs Torsades de Pointes',
+          body: '<strong>1. Eclampsia / Severe Pre-eclampsia (Zuspan Regimen):</strong><br>&bull; <em>Loading Dose:</em> 4 g IV over 15 - 20 minutes (dilute 8 mL of 50% solution with 12 mL NS/D5W to make 20 mL of 20% solution).<br>&bull; <em>Maintenance Infusion:</em> 1 - 2 g/hr continuous infusion for 24 hours postpartum or 24 hours after last seizure.<br><br><strong>2. Fetal Neuroprotection (&lt;32 Weeks Preterm Delivery):</strong><br>&bull; <em>Loading:</em> 4 g IV over 20 - 30 minutes.<br>&bull; <em>Maintenance:</em> 1.0 g/hr IV infusion until birth or up to 12 - 24 hours.<br><br><strong>3. Torsades de Pointes (Polymorphic VT) & Severe Hypomagnesemia:</strong><br>&bull; <em>Cardiac Arrest / Unstable TdP:</em> 1 - 2 g IV push diluted in 10 mL D5W over 1 - 2 minutes.<br>&bull; <em>Stable TdP:</em> 1 - 2 g IV in 50 - 100 mL D5W over 15 minutes, followed by 0.5 - 1.0 g/hr maintenance infusion.<br><br><strong>Clinical Safety Checklist:</strong><br>&bull; Check patellar knee-jerk reflex (loss of reflex occurs at 4 - 5 mmol/L; earliest sign of toxicity).<br>&bull; Respiratory rate must be &gt;12 /min.<br>&bull; Urine output must be &gt;25 - 30 mL/hr (&gt;100 mL/4hr). Excreted entirely by kidneys.<br>&bull; <strong>Antidote:</strong> 10% Calcium Gluconate 10 mL IV slowly over 5 - 10 minutes.'
+        }
+      },
+      {
+        id: 'lipid_emulsion',
+        name: 'Lipid Emulsion 20% (LAST Resuscitation)',
+        category: 'antidotes',
+        unit: 'ml/kg/min',
+        preparations: [
+          {
+            id: 'lipid_100ml_20pct',
+            label: '100 mL Bottle 20% (Intralipid / Lipofundin / ClinOleic)',
+            sublabel: 'Standard 20% soybean/olive/fish oil emulsion for LAST',
+            strengthVal: 200,
+            strengthUnit: 'mg/ml',
+            ampVol: 50,
+            totalContent: '20 g lipid / 100 mL',
+            defaultMlToDraw: 50,
+            recommendedDiluent: 'Pure Undiluted (NO DILUTION)'
+          },
+          {
+            id: 'lipid_250ml_20pct',
+            label: '250 mL Bottle / Bag 20% (Intralipid 20%)',
+            sublabel: 'Dedicated resuscitation lipid bag (200 mg/mL)',
+            strengthVal: 200,
+            strengthUnit: 'mg/ml',
+            ampVol: 50,
+            totalContent: '50 g lipid / 250 mL',
+            defaultMlToDraw: 50,
+            recommendedDiluent: 'Pure Undiluted (NO DILUTION)'
+          },
+          {
+            id: 'lipid_500ml_20pct',
+            label: '500 mL Bag 20% (Standard Hospital Stock)',
+            sublabel: 'Full volume resuscitation bag',
+            strengthVal: 200,
+            strengthUnit: 'mg/ml',
+            ampVol: 50,
+            totalContent: '100 g lipid / 500 mL',
+            defaultMlToDraw: 50,
+            recommendedDiluent: 'Pure Undiluted (NO DILUTION)'
+          }
+        ],
+        range: '0.25 mL/kg/min (15 mL/kg/hr)',
+        scenarios: {
+          title: 'ASRA / AAGBI Local Anaesthetic Systemic Toxicity (LAST) Protocol',
+          body: '<strong>1. Initial IV Bolus:</strong><br>&bull; <strong>1.5 mL/kg</strong> IV push over 2 - 3 minutes (approx 100 mL for 70 kg adult).<br>&bull; In refractory cardiac arrest, repeat bolus once or twice every 3 - 5 minutes.<br><br><strong>2. Continuous IV Infusion:</strong><br>&bull; <strong>0.25 mL/kg/min</strong> (equivalent to 15 mL/kg/hr).<br>&bull; <em>For 70 kg:</em> ~17.5 mL/min = 1,050 mL/hr.<br>&bull; If hemodynamically unstable, rate may be doubled to 0.5 mL/kg/min.<br><br><strong>3. Maximum Safe Cumulative Dose:</strong> 12 mL/kg over the first 30 minutes.<br><br><strong>Critical Resuscitation Pearls:</strong><br>&bull; <strong>Propofol is NOT a substitute</strong> for 20% lipid emulsion (contains only 10% lipid in huge volume, and is a potent myocardial depressant).<br>&bull; Reduce individual adrenaline doses during ACLS (&lt;1 mcg/kg; e.g. 10 - 50 mcg boluses). Avoid vasopressin, high-dose epinephrine, and beta-blockers.'
+        }
       }
     ];
 
@@ -2499,6 +2699,18 @@
           const deliveredMin = (totalUnits / totalSyringeVol) / 60;
           dose1MlHrBox.textContent = `${deliveredMin.toFixed(4)} units/min`;
           if (dose1MlHrMin) dose1MlHrMin.textContent = `Hourly Total: ${(totalUnits / totalSyringeVol).toFixed(2)} units/hr`;
+        } else if (drug.unit === 'g/hr') {
+          const deliveredGHr = (concMgPerMl * 1) / 1000;
+          dose1MlHrBox.textContent = `${deliveredGHr.toFixed(3)} g/hr`;
+          if (dose1MlHrMin) dose1MlHrMin.textContent = `Total: ${(deliveredGHr * 1000).toFixed(1)} mg/hr • Syringe: ${totalSyringeVol} mL`;
+        } else if (drug.unit === 'mg/min') {
+          const deliveredMgMin = (concMgPerMl * 1) / 60;
+          dose1MlHrBox.textContent = `${deliveredMgMin.toFixed(3)} mg/min`;
+          if (dose1MlHrMin) dose1MlHrMin.textContent = `Hourly: ${concMgPerMl.toFixed(2)} mg/hr • Weight-Independent`;
+        } else if (drug.unit === 'ml/kg/min') {
+          const deliveredMlKgMin = (1 / patientWeight) / 60;
+          dose1MlHrBox.textContent = `${formatNum(deliveredMlKgMin)} mL/kg/min`;
+          if (dose1MlHrMin) dose1MlHrMin.textContent = `Hourly: 1 mL/hr • ${(1 / patientWeight).toFixed(3)} mL/kg/hr`;
         } else if (drug.unit === 'mg/kg/hr') {
           const deliveredMgKgHr = (concMgPerMl * 1) / patientWeight;
           dose1MlHrBox.textContent = `${formatNum(deliveredMgKgHr)} mg/kg/hr`;
@@ -2509,6 +2721,257 @@
           dose1MlHrBox.textContent = `${formatNum(delivered1MlHr)} mcg/kg/min`;
           if (dose1MlHrMin) dose1MlHrMin.textContent = `Total: ${deliveredMin.toFixed(2)} mcg/min • Hourly: ${concMgPerMl.toFixed(3)} mg/hr`;
         }
+      }
+    }
+
+    function selectDisplayMetric(metric) {
+      appState.selectedMetric = metric;
+      saveAppState();
+      renderSelectedMetricButtons();
+      recalculateLivePumpDoses();
+    }
+
+    function renderSelectedMetricButtons() {
+      const drug = getCurrentDrug();
+      const customBtn = document.getElementById('metric-btn-custom');
+      
+      if (drug && ['g/hr', 'mg/min', 'ml/kg/min'].includes(drug.unit)) {
+        customBtn.classList.remove('hidden');
+        customBtn.textContent = drug.unit;
+      } else {
+        customBtn.classList.add('hidden');
+      }
+
+      const metrics = ['mcg/kg/min', 'mcg/min', 'mg/hr', 'custom'];
+      metrics.forEach(m => {
+        const btn = document.getElementById(m === 'custom' ? 'metric-btn-custom' : `metric-btn-${m.replace(/\//g, '-')}`);
+        if (!btn) return;
+        const isActive = (m === 'custom' && appState.selectedMetric === drug?.unit) || (appState.selectedMetric === m);
+        if (isActive) {
+          btn.className = "flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-extrabold transition bg-teal-600 text-white shadow";
+        } else {
+          btn.className = "flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition";
+        }
+      });
+    }
+
+    function handlePumpRateChange(rateVal) {
+      const parsed = parseFloat(rateVal);
+      if (!isNaN(parsed) && parsed >= 0) {
+        appState.pumpRate = parsed;
+        document.getElementById('live-pump-speed').value = parsed.toFixed(1);
+        document.getElementById('slider-live-rate').value = Math.min(parsed, 30);
+        saveAppState();
+        recalculateLivePumpDoses();
+      }
+    }
+
+    function adjustPumpRate(delta) {
+      let current = parseFloat(appState.pumpRate) || 5.0;
+      current = Math.max(0, current + delta);
+      handlePumpRateChange(current);
+    }
+
+    function setPumpRate(rate) {
+      handlePumpRateChange(rate);
+    }
+
+    function recalculateLivePumpDoses() {
+      const drug = getCurrentDrug();
+      if (!drug) return;
+
+      const rateMlHr = parseFloat(appState.pumpRate) || 0;
+      const weight = parseFloat(appState.weight) || 70;
+      const concMcgPerMl = appState.concMcgPerMl;
+      const concMgPerMl = appState.concMgPerMl;
+
+      const valBox = document.getElementById('selected-metric-value');
+      const unitBox = document.getElementById('selected-metric-unit');
+
+      if (appState.selectedMetric === 'g/hr' || (drug.unit === 'g/hr' && appState.selectedMetric === 'custom')) {
+        const doseGHr = (rateMlHr * concMgPerMl) / 1000;
+        valBox.textContent = doseGHr.toFixed(2);
+        unitBox.textContent = 'g / hr';
+      } else if (appState.selectedMetric === 'mg/min' || (drug.unit === 'mg/min' && appState.selectedMetric === 'custom')) {
+        const doseMgMin = (rateMlHr * concMgPerMl) / 60;
+        valBox.textContent = formatNum(doseMgMin);
+        unitBox.textContent = 'mg / min';
+      } else if (appState.selectedMetric === 'ml/kg/min' || (drug.unit === 'ml/kg/min' && appState.selectedMetric === 'custom')) {
+        const doseMlKgMin = (rateMlHr / weight) / 60;
+        valBox.textContent = formatNum(doseMlKgMin);
+        unitBox.textContent = 'mL / kg / min';
+      } else if (appState.selectedMetric === 'mcg/kg/min') {
+        const dose = ((rateMlHr * concMcgPerMl) / 60) / weight;
+        valBox.textContent = formatNum(dose);
+        unitBox.textContent = 'mcg / kg / min';
+      } else if (appState.selectedMetric === 'mcg/min') {
+        const dose = (rateMlHr * concMcgPerMl) / 60;
+        valBox.textContent = formatNum(dose);
+        unitBox.textContent = 'mcg / min';
+      } else if (appState.selectedMetric === 'mg/hr') {
+        if (drug.unit === 'units/min') {
+          const dose = rateMlHr * concMgPerMl;
+          valBox.textContent = dose.toFixed(2);
+          unitBox.textContent = 'Units / hr';
+        } else if (drug.unit === 'mg/kg/hr') {
+          const doseMgKgHr = (rateMlHr * concMgPerMl) / weight;
+          valBox.textContent = formatNum(doseMgKgHr);
+          unitBox.textContent = 'mg / kg / hr';
+        } else {
+          const dose = rateMlHr * concMgPerMl;
+          valBox.textContent = formatNum(dose);
+          unitBox.textContent = 'mg / hr';
+        }
+      }
+    }
+
+    /* REVERSE CALCULATOR */
+    let reverseCalculatedMlDrug = 4;
+    let reverseCalculatedMlDiluent = 46;
+
+    function initReverseModeInputs() {
+      const drug = getCurrentDrug();
+      const doseUnitSelect = document.getElementById('reverse-target-dose-unit-select');
+      
+      if (doseUnitSelect) {
+        if (drug && drug.unit && ['mcg/kg/min', 'mcg/min', 'mg/hr', 'mg/min', 'mg/kg/hr', 'g/hr', 'units/min', 'ml/kg/min'].includes(drug.unit)) {
+          doseUnitSelect.value = drug.unit;
+        } else if (appState.selectedMetric && ['mcg/kg/min', 'mcg/min', 'mg/hr'].includes(appState.selectedMetric)) {
+          doseUnitSelect.value = appState.selectedMetric;
+        }
+      }
+
+      document.getElementById('reverse-target-conc').value = appState.concMcgPerMl > 0 ? appState.concMcgPerMl.toFixed(1) : '80.0';
+      calculateReverseFromConc(parseFloat(document.getElementById('reverse-target-conc').value));
+    }
+
+    function handleReverseDoseUnitChange() {
+      const doseVal = document.getElementById('reverse-target-dose').value;
+      if (doseVal) {
+        calculateReverseFromDose(doseVal);
+      }
+    }
+
+    function calculateReverseFromConc(concVal) {
+      const targetConc = parseFloat(concVal);
+      if (isNaN(targetConc) || targetConc <= 0) return;
+
+      const unit = document.getElementById('reverse-conc-unit').value;
+      const prep = getCurrentPrep();
+      const syringeVol = appState.syringeVolume || 50;
+
+      if (!prep) return;
+
+      let targetTotalMcg = 0;
+      if (unit === 'mcg/ml') targetTotalMcg = targetConc * syringeVol;
+      else if (unit === 'mg/ml') targetTotalMcg = targetConc * 1000 * syringeVol;
+      else if (unit === 'units/ml') targetTotalMcg = targetConc * syringeVol;
+
+      let stockStrengthMcgPerMl = 0;
+      if (prep.strengthUnit === 'mg/ml') stockStrengthMcgPerMl = prep.strengthVal * 1000;
+      else if (prep.strengthUnit === 'mcg/ml') stockStrengthMcgPerMl = prep.strengthVal;
+      else if (prep.strengthUnit === 'units/ml') stockStrengthMcgPerMl = prep.strengthVal;
+
+      const reqDrugMl = targetTotalMcg / stockStrengthMcgPerMl;
+      const reqDiluentMl = Math.max(0, syringeVol - reqDrugMl);
+
+      reverseCalculatedMlDrug = reqDrugMl;
+      reverseCalculatedMlDiluent = reqDiluentMl;
+
+      const resDrug = document.getElementById('rev-res-drug-ml');
+      const resDil = document.getElementById('rev-res-diluent-ml');
+      if (resDrug) {
+        if (reqDrugMl > syringeVol) {
+          resDrug.innerHTML = `<span class="text-rose-600 font-bold">${reqDrugMl.toFixed(1)} mL (Exceeds ${syringeVol} mL syringe!)</span>`;
+        } else {
+          resDrug.textContent = `${reqDrugMl.toFixed(2)} mL`;
+        }
+      }
+      if (resDil) resDil.textContent = `${reqDiluentMl.toFixed(2)} mL`;
+    }
+
+    function calculateReverseFromDose(doseVal) {
+      const targetDose = parseFloat(doseVal);
+      if (isNaN(targetDose) || targetDose <= 0) return;
+
+      const weight = parseFloat(appState.weight) || 70;
+      const selectedUnit = document.getElementById('reverse-target-dose-unit-select').value;
+
+      let targetConcMcgPerMl = 0;
+      let targetConcMgPerMl = 0;
+      let targetConcUnitsPerMl = 0;
+
+      if (selectedUnit === 'mcg/kg/min') {
+        targetConcMcgPerMl = targetDose * weight * 60;
+        document.getElementById('reverse-conc-unit').value = 'mcg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMcgPerMl.toFixed(1);
+        calculateReverseFromConc(targetConcMcgPerMl);
+      } else if (selectedUnit === 'mcg/min') {
+        targetConcMcgPerMl = targetDose * 60;
+        document.getElementById('reverse-conc-unit').value = 'mcg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMcgPerMl.toFixed(1);
+        calculateReverseFromConc(targetConcMcgPerMl);
+      } else if (selectedUnit === 'mg/min') {
+        targetConcMgPerMl = targetDose * 60;
+        document.getElementById('reverse-conc-unit').value = 'mg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(2);
+        calculateReverseFromConc(targetConcMgPerMl);
+      } else if (selectedUnit === 'g/hr') {
+        targetConcMgPerMl = targetDose * 1000;
+        document.getElementById('reverse-conc-unit').value = 'mg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(1);
+        calculateReverseFromConc(targetConcMgPerMl);
+      } else if (selectedUnit === 'ml/kg/min') {
+        const requiredMlPerHr = targetDose * weight * 60;
+        appState.pumpRate = requiredMlPerHr;
+        document.getElementById('live-pump-speed').value = requiredMlPerHr.toFixed(1);
+        document.getElementById('slider-live-rate').value = Math.min(requiredMlPerHr, 30);
+        recalculateLivePumpDoses();
+        showToast(`Target rate set to ${requiredMlPerHr.toFixed(1)} mL/hr for ${weight} kg`);
+      } else if (selectedUnit === 'mg/hr') {
+        targetConcMgPerMl = targetDose;
+        document.getElementById('reverse-conc-unit').value = 'mg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(3);
+        calculateReverseFromConc(targetConcMgPerMl);
+      } else if (selectedUnit === 'mg/kg/hr') {
+        targetConcMgPerMl = targetDose * weight;
+        document.getElementById('reverse-conc-unit').value = 'mg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(3);
+        calculateReverseFromConc(targetConcMgPerMl);
+      } else if (selectedUnit === 'units/min') {
+        targetConcUnitsPerMl = targetDose * 60;
+        document.getElementById('reverse-conc-unit').value = 'units/ml';
+        document.getElementById('reverse-target-conc').value = targetConcUnitsPerMl.toFixed(3);
+        calculateReverseFromConc(targetConcUnitsPerMl);
+      }
+    }
+
+    function selectSingleDrug(drugId) {
+      appState.selectedDrugId = drugId;
+      appState.selectedPrepId = null;
+
+      const drug = getCurrentDrug();
+      if (drug) {
+        if (drug.unit === 'mcg/min') {
+          appState.selectedMetric = 'mcg/min';
+        } else if (drug.unit === 'mg/hr') {
+          appState.selectedMetric = 'mg/hr';
+        } else if (drug.unit === 'g/hr') {
+          appState.selectedMetric = 'g/hr';
+        } else if (drug.unit === 'mg/min') {
+          appState.selectedMetric = 'mg/min';
+        } else if (drug.unit === 'ml/kg/min') {
+          appState.selectedMetric = 'ml/kg/min';
+        } else {
+          appState.selectedMetric = 'mcg/kg/min';
+        }
+      }
+
+      saveAppState();
+      renderStep1Drugs();
+      updateStickyCaseSummary();
+      updateBottomBar();
+    }
       }
     }
 
