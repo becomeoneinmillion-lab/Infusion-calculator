@@ -2,43 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Anaesthesiologist's Step-by-Step Infusion Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Anaesthesia Infusion Calculator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
     }
     .mono {
       font-family: 'JetBrains Mono', monospace;
     }
-    /* Custom scrollbar styling */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+    /* Mobile-optimized touch scrolling */
+    .touch-scroll {
+      -webkit-overflow-scrolling: touch;
     }
-    ::-webkit-scrollbar-track {
-      background: #f1f5f9;
+    /* Remove number spinners on mobile */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
     }
-    ::-webkit-scrollbar-thumb {
-      background: #94a3b8;
-      border-radius: 9999px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #64748b;
-    }
-    @media print {
-      .no-print {
-        display: none !important;
-      }
-      .print-only {
-        display: block !important;
-      }
+    input[type=number] {
+      -moz-appearance: textfield;
     }
   </style>
   <script>
@@ -53,11 +44,6 @@
               600: '#0369a1',
               700: '#075985',
               900: '#0c4a6e',
-            },
-            clinical: {
-              bg: '#f8fafc',
-              dark: '#0f172a',
-              teal: '#0d9488',
             }
           }
         }
@@ -65,167 +51,145 @@
     }
   </script>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-teal-500 selection:text-white pb-20 sm:pb-8">
 
-  <!-- TOP CLINICAL HEADER -->
-  <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40 shadow-md no-print">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-teal-500 to-sky-600 flex items-center justify-center text-white shadow-md shadow-teal-900/40">
-          <i class="fa-solid fa-syringe text-lg"></i>
+  <!-- TOP CLINICAL HEADER (CLEAN, NO 'STEP-BY-STEP') -->
+  <header class="bg-slate-950 border-b border-slate-800 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between">
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded-lg bg-teal-600 flex items-center justify-center text-white shadow">
+          <i class="fa-solid fa-syringe text-sm"></i>
         </div>
         <div>
-          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-extrabold text-white tracking-tight leading-tight">
             Anaesthesia Infusion Engine
-            <span class="text-[10px] bg-teal-500/20 text-teal-300 border border-teal-400/30 px-2 py-0.5 rounded font-mono">Step-by-Step</span>
           </h1>
-          <p class="text-xs text-slate-400">Titration & Dilution Protocol System</p>
+          <p class="text-[11px] text-slate-400">Titration & Dilution Protocol System</p>
         </div>
       </div>
 
-      <!-- Right Header Actions: Doctor Badge & Settings Trigger -->
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button onclick="openModal('settings-modal')" class="flex items-center bg-slate-800/90 hover:bg-slate-700/90 border border-slate-700 rounded-xl px-3 py-1.5 transition text-left">
-          <div class="w-7 h-7 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center mr-2 text-xs">
-            <i class="fa-solid fa-user-doctor"></i>
-          </div>
-          <div class="text-xs leading-tight hidden sm:block">
-            <div id="hdr-doc-name" class="font-bold text-slate-200">Dr. Anaesthesiologist</div>
-            <div id="hdr-doc-meta" class="text-slate-400 text-[10px]">Profile & Formulary</div>
-          </div>
-          <i class="fa-solid fa-gear text-slate-400 ml-2 text-xs"></i>
+      <!-- Header Profile & Reset Buttons -->
+      <div class="flex items-center gap-2">
+        <button onclick="openModal('settings-modal')" class="p-2 sm:px-2.5 sm:py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-slate-200 text-xs font-semibold flex items-center gap-1.5 active:scale-95 transition" aria-label="Settings">
+          <i class="fa-solid fa-user-doctor text-teal-400"></i>
+          <span id="hdr-doc-name" class="hidden sm:inline text-xs font-bold">Dr. Anaesthesiologist</span>
+          <i class="fa-solid fa-gear text-slate-400 text-[10px]"></i>
         </button>
 
-        <button onclick="resetCalculator(true)" class="p-2 sm:px-3 sm:py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-semibold transition flex items-center gap-1.5" title="Reset Calculator">
+        <button onclick="resetCalculator(true)" class="p-2 sm:px-2.5 sm:py-1.5 bg-rose-950/40 hover:bg-rose-900/50 text-rose-300 border border-rose-800/60 rounded-lg text-xs font-bold flex items-center gap-1 active:scale-95 transition" title="Reset">
           <i class="fa-solid fa-rotate-left"></i>
           <span class="hidden sm:inline">Reset</span>
         </button>
       </div>
     </div>
 
-    <!-- BREADCRUMB STEP PROGRESS BAR -->
-    <div class="bg-slate-950 border-t border-slate-800/80 px-4 sm:px-6 py-2 overflow-x-auto">
-      <div class="max-w-6xl mx-auto flex items-center justify-between text-xs min-w-[500px] font-medium text-slate-400">
+    <!-- BREADCRUMB PROGRESS BAR (COMPACT & SCROLLABLE ON MOBILE) -->
+    <div class="bg-slate-950/90 border-t border-slate-800/80 px-4 py-2 overflow-x-auto touch-scroll">
+      <div class="max-w-4xl mx-auto flex items-center justify-between text-xs min-w-[460px] font-medium text-slate-400">
         <div class="flex items-center gap-1.5 cursor-pointer step-nav-item active-step text-teal-400 font-bold" onclick="goToStep(1)" id="step-crumb-1">
           <span class="w-5 h-5 rounded-full bg-teal-500/20 border border-teal-400 flex items-center justify-center text-[10px]">1</span>
-          <span>Choose Drug</span>
+          <span>Drug</span>
         </div>
-        <i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+        <i class="fa-solid fa-chevron-right text-[9px] text-slate-700"></i>
 
-        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item" onclick="goToStep(2)" id="step-crumb-2">
+        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item text-slate-500" onclick="goToStep(2)" id="step-crumb-2">
           <span class="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px]">2</span>
           <span>Weight</span>
         </div>
-        <i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+        <i class="fa-solid fa-chevron-right text-[9px] text-slate-700"></i>
 
-        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item" onclick="goToStep(3)" id="step-crumb-3">
+        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item text-slate-500" onclick="goToStep(3)" id="step-crumb-3">
           <span class="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px]">3</span>
-          <span>Commercial Prep</span>
+          <span>Prep</span>
         </div>
-        <i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+        <i class="fa-solid fa-chevron-right text-[9px] text-slate-700"></i>
 
-        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item" onclick="goToStep(4)" id="step-crumb-4">
+        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item text-slate-500" onclick="goToStep(4)" id="step-crumb-4">
           <span class="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px]">4</span>
           <span>Syringe</span>
         </div>
-        <i class="fa-solid fa-chevron-right text-[10px] text-slate-600"></i>
+        <i class="fa-solid fa-chevron-right text-[9px] text-slate-700"></i>
 
-        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item" onclick="goToStep(5)" id="step-crumb-5">
+        <div class="flex items-center gap-1.5 cursor-pointer step-nav-item text-slate-500" onclick="goToStep(5)" id="step-crumb-5">
           <span class="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px]">5</span>
-          <span>Calculation & Titration</span>
+          <span>Calculate</span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- QUICK CASE STATUS STRIP (Always visible for clinical safety) -->
-  <section class="bg-teal-900/90 text-white border-b border-teal-800 shadow-sm no-print">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-2 flex flex-wrap items-center justify-between text-xs gap-3">
-      <div class="flex items-center gap-3 flex-wrap">
-        <span class="text-teal-200 font-semibold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-          <i class="fa-solid fa-heart-pulse text-teal-300"></i> Active Infusion:
+  <!-- QUICK ACTIVE STATUS STRIP (HIGH CONTRAST & CLEAN) -->
+  <section class="bg-slate-900 border-b border-slate-800 text-xs">
+    <div class="max-w-4xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-slate-300">
+      <div class="flex items-center gap-2 flex-wrap text-xs">
+        <span class="text-teal-400 font-bold flex items-center gap-1">
+          <i class="fa-solid fa-heart-pulse"></i> Active:
         </span>
-        <span class="bg-teal-950/80 px-2.5 py-1 rounded-md border border-teal-700 text-teal-100">
-          Drug: <strong id="strip-drug-name" class="text-amber-300 font-bold">None selected</strong>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700">
+          Drug: <strong id="strip-drug-name" class="text-white font-bold">None Selected</strong>
         </span>
-        <span class="bg-teal-950/80 px-2.5 py-1 rounded-md border border-teal-700 text-teal-100">
-          Weight: <strong id="strip-weight" class="text-amber-300 font-mono font-bold">-- kg</strong>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700">
+          Weight: <strong id="strip-weight" class="text-white font-mono font-bold">-- kg</strong>
         </span>
-        <span class="bg-teal-950/80 px-2.5 py-1 rounded-md border border-teal-700 text-teal-100">
-          Syringe: <strong id="strip-syringe" class="text-teal-200 font-mono">50 ml</strong>
+        <span class="bg-slate-800 px-2.5 py-0.5 rounded border border-slate-700">
+          Syringe: <strong id="strip-syringe" class="text-teal-300 font-mono">50 mL</strong>
         </span>
-        <span class="bg-teal-950/80 px-2.5 py-1 rounded-md border border-teal-700 text-teal-100">
-          Syringe Conc: <strong id="strip-conc" class="text-emerald-300 font-mono font-bold">--</strong>
-        </span>
-      </div>
-
-      <div class="text-[11px] text-teal-200">
-        Step <span id="current-step-display" class="font-bold text-white">1</span> of 5
       </div>
     </div>
   </section>
 
   <!-- MAIN WIZARD CONTAINER -->
-  <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+  <main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-5">
 
     <!-- ======================================================= -->
-    <!-- STEP 1: CHOOSE DRUG (CLEAN, GENERIC NAMES ONLY)         -->
+    <!-- STEP 1: CHOOSE DRUG (CLEAN, NO PRESELECTED DEFAULT)      -->
     <!-- ======================================================= -->
-    <div id="wizard-step-1" class="wizard-step space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-          <div>
-            <div class="text-xs font-mono uppercase bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded font-semibold inline-block mb-1">Step 1 of 5</div>
-            <h2 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-pills text-teal-600"></i> Choose Drug
-            </h2>
-          </div>
-          <!-- Clean header actions -->
-          <div class="flex items-center gap-2">
-            <button onclick="resetCalculator(true)" class="px-3.5 py-2 text-xs font-semibold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-xl transition flex items-center gap-1.5">
-              <i class="fa-solid fa-rotate-left"></i> Reset / Start Over
-            </button>
-            <button onclick="openModal('settings-modal')" class="px-3.5 py-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5">
-              <i class="fa-solid fa-plus text-teal-600"></i> Add New Drug
-            </button>
-          </div>
+    <div id="wizard-step-1" class="wizard-step space-y-4">
+      <div class="bg-slate-850 bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-sm">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-pills text-teal-400"></i> Choose Drug
+          </h2>
+          <button onclick="openModal('settings-modal')" class="px-3 py-1.5 text-xs font-semibold text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition flex items-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-plus text-teal-400"></i> Add Drug
+          </button>
         </div>
 
-        <!-- Drug Category Quick Filters -->
-        <div class="mt-4 flex flex-wrap gap-2 text-xs font-medium">
-          <button onclick="filterCategory('all')" class="cat-pill active-pill px-3 py-1.5 rounded-lg bg-slate-800 text-white" id="cat-pill-all">All Classes</button>
-          <button onclick="filterCategory('inotropes')" class="cat-pill px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-inotropes">Inotropes & Vasopressors</button>
-          <button onclick="filterCategory('sedatives')" class="cat-pill px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-sedatives">Sedatives</button>
-          <button onclick="filterCategory('analgesics')" class="cat-pill px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-analgesics">Analgesics</button>
-          <button onclick="filterCategory('relaxants')" class="cat-pill px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-relaxants">Muscle Relaxants</button>
-          <button onclick="filterCategory('antihypertensives')" class="cat-pill px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200" id="cat-pill-antihypertensives">Antihypertensives</button>
+        <!-- Category Horizontal Chips (Touch friendly) -->
+        <div class="mt-3 flex gap-1.5 overflow-x-auto touch-scroll pb-1 text-xs font-semibold">
+          <button onclick="filterCategory('all')" class="cat-pill active-pill whitespace-nowrap px-3 py-2 rounded-lg bg-teal-600 text-white font-bold" id="cat-pill-all">All Classes</button>
+          <button onclick="filterCategory('inotropes')" class="cat-pill whitespace-nowrap px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700" id="cat-pill-inotropes">Inotropes & Vasopressors</button>
+          <button onclick="filterCategory('sedatives')" class="cat-pill whitespace-nowrap px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700" id="cat-pill-sedatives">Sedatives</button>
+          <button onclick="filterCategory('analgesics')" class="cat-pill whitespace-nowrap px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700" id="cat-pill-analgesics">Analgesics</button>
+          <button onclick="filterCategory('relaxants')" class="cat-pill whitespace-nowrap px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700" id="cat-pill-relaxants">Muscle Relaxants</button>
+          <button onclick="filterCategory('antihypertensives')" class="cat-pill whitespace-nowrap px-3 py-2 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700" id="cat-pill-antihypertensives">Antihypertensives</button>
         </div>
 
-        <!-- Search Drug -->
-        <div class="mt-4 relative">
-          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3 text-slate-400 text-xs"></i>
-          <input type="text" id="drug-search-input" oninput="handleDrugSearch(this.value)" placeholder="Search Noradrenaline, Propofol, Fentanyl, etc..."
-            class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-teal-200 focus:border-teal-500">
+        <!-- Search Bar -->
+        <div class="mt-3 relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+          <input type="text" id="drug-search-input" oninput="handleDrugSearch(this.value)" placeholder="Search drug generic name..."
+            class="w-full pl-10 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-teal-500">
         </div>
 
-        <!-- Clean Drug Cards (Generic names only, no clutter) -->
-        <div id="step-drugs-grid" class="mt-5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-          <!-- Dynamically populated via JS -->
+        <!-- Clean Grid: Generic Drug Names Only -->
+        <div id="step-drugs-grid" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+          <!-- Populated dynamically via JS -->
         </div>
 
-        <!-- Selected Drug Preview Banner -->
-        <div id="step1-selection-banner" class="mt-6 p-4 rounded-xl border border-teal-200 bg-teal-50/70 flex flex-wrap items-center justify-between gap-3 hidden">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-bold text-lg">
+        <!-- Selected Drug Banner (Hidden until user taps) -->
+        <div id="step1-selection-banner" class="mt-5 p-4 rounded-xl border border-teal-500/40 bg-teal-950/60 flex flex-col sm:flex-row items-center justify-between gap-3 hidden">
+          <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="w-9 h-9 rounded-lg bg-teal-500 text-slate-950 flex items-center justify-center font-bold text-base flex-shrink-0">
               <i class="fa-solid fa-check"></i>
             </div>
             <div>
-              <div class="text-xs text-teal-800 font-semibold uppercase">Selected Drug:</div>
-              <div id="step1-selected-name" class="text-base font-bold text-teal-950">Noradrenaline</div>
+              <div class="text-[11px] text-teal-300 font-bold uppercase tracking-wider">Selected Drug:</div>
+              <div id="step1-selected-name" class="text-base font-extrabold text-white">Noradrenaline</div>
             </div>
           </div>
-          <button onclick="goToStep(2)" class="px-5 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
-            <span>Continue to Patient Weight</span>
+          <button onclick="goToStep(2)" class="w-full sm:w-auto px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-sm rounded-xl shadow transition flex items-center justify-center gap-2 active:scale-98">
+            <span>Continue to Weight</span>
             <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
@@ -235,66 +199,60 @@
     <!-- ======================================================= -->
     <!-- STEP 2: ENTER WEIGHT                                     -->
     <!-- ======================================================= -->
-    <div id="wizard-step-2" class="wizard-step hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="pb-4 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <div class="text-xs font-mono uppercase bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded font-semibold inline-block mb-1">Step 2 of 5</div>
-            <h2 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-weight-scale text-teal-600"></i> Patient Weight
-            </h2>
-          </div>
-          <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-3 py-1 rounded-full font-bold flex items-center gap-1">
-            <i class="fa-solid fa-circle-exclamation"></i> Mandatory
+    <div id="wizard-step-2" class="wizard-step hidden space-y-4">
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-sm">
+        <div class="pb-3 border-b border-slate-800 flex items-center justify-between">
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-weight-scale text-teal-400"></i> Patient Weight
+          </h2>
+          <span class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2.5 py-0.5 rounded-full font-bold">
+            Mandatory
           </span>
         </div>
 
-        <div class="mt-6 max-w-xl mx-auto space-y-6">
-          <!-- Weight Input with Quick Stepper -->
+        <div class="mt-6 max-w-md mx-auto space-y-5">
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 text-center">
-              Body Weight (kg) <span class="text-red-500">*</span>
+            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2 text-center">
+              Body Weight (kg) <span class="text-rose-400">*</span>
             </label>
-            <div class="flex items-center gap-3">
-              <button type="button" onclick="adjustWeight(-1)" class="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xl border border-slate-300 flex items-center justify-center transition active:scale-95">
+            <div class="flex items-center gap-2">
+              <button type="button" onclick="adjustWeight(-1)" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-2xl border border-slate-700 flex items-center justify-center active:scale-95 transition">
                 -
               </button>
               <div class="relative flex-1">
-                <input type="number" id="input-weight" step="0.5" min="1" max="350" placeholder="e.g. 70"
-                  class="w-full text-center text-3xl font-extrabold font-mono text-slate-900 border-2 border-slate-300 focus:border-teal-500 focus:ring-4 focus:ring-teal-100 rounded-2xl py-3 px-4 transition"
+                <input type="number" id="input-weight" step="0.5" min="1" max="350" placeholder="70"
+                  class="w-full text-center text-3xl font-extrabold font-mono text-white bg-slate-950 border-2 border-slate-700 focus:border-teal-400 rounded-2xl py-3 px-3 transition focus:outline-none"
                   oninput="handleWeightInput(this.value)">
-                <span class="absolute right-4 top-4 text-xs font-bold text-slate-400 uppercase">kg</span>
+                <span class="absolute right-3.5 top-4 text-xs font-bold text-slate-500 uppercase">kg</span>
               </div>
-              <button type="button" onclick="adjustWeight(1)" class="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xl border border-slate-300 flex items-center justify-center transition active:scale-95">
+              <button type="button" onclick="adjustWeight(1)" class="w-14 h-14 rounded-2xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-2xl border border-slate-700 flex items-center justify-center active:scale-95 transition">
                 +
               </button>
             </div>
-            <p id="step2-weight-error" class="text-xs text-red-500 font-semibold mt-2 hidden text-center">
+            <p id="step2-weight-error" class="text-xs text-rose-400 font-semibold mt-2 hidden text-center">
               Please enter a valid weight between 1 kg and 350 kg.
             </p>
           </div>
 
-          <!-- Quick Preset Chips -->
-          <div>
-            <div class="flex flex-wrap gap-2 justify-center">
-              <button onclick="setWeightPreset(50)" class="weight-chip px-4 py-2 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-700 font-mono text-sm font-bold rounded-xl border border-slate-200 transition">50 kg</button>
-              <button onclick="setWeightPreset(60)" class="weight-chip px-4 py-2 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-700 font-mono text-sm font-bold rounded-xl border border-slate-200 transition">60 kg</button>
-              <button onclick="setWeightPreset(70)" class="weight-chip px-4 py-2 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-700 font-mono text-sm font-bold rounded-xl border border-slate-200 transition">70 kg</button>
-              <button onclick="setWeightPreset(80)" class="weight-chip px-4 py-2 bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-700 font-mono text-sm font-bold rounded-xl border border-slate-200 transition">80 kg</button>
-            </div>
+          <!-- Weight Presets (Quick Mobile Tap) -->
+          <div class="flex flex-wrap gap-2 justify-center">
+            <button onclick="setWeightPreset(50)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm font-bold rounded-xl border border-slate-700 active:scale-95 transition">50 kg</button>
+            <button onclick="setWeightPreset(60)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm font-bold rounded-xl border border-slate-700 active:scale-95 transition">60 kg</button>
+            <button onclick="setWeightPreset(70)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm font-bold rounded-xl border border-slate-700 active:scale-95 transition">70 kg</button>
+            <button onclick="setWeightPreset(80)" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-sm font-bold rounded-xl border border-slate-700 active:scale-95 transition">80 kg</button>
           </div>
 
           <!-- Optional Age & Sex -->
-          <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-100">
+          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800">
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Age (Years) <span class="text-slate-400 font-normal">(Optional)</span></label>
-              <input type="number" id="input-age" placeholder="e.g. 58"
-                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-teal-200"
+              <label class="block text-xs font-bold text-slate-400 mb-1">Age (Years) <span class="text-slate-500 font-normal">(Opt)</span></label>
+              <input type="number" id="input-age" placeholder="e.g. 55"
+                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-400"
                 oninput="saveAppState()">
             </div>
             <div>
-              <label class="block text-xs font-bold text-slate-600 mb-1">Sex <span class="text-slate-400 font-normal">(Optional)</span></label>
-              <select id="input-sex" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 bg-white focus:ring-2 focus:ring-teal-200" onchange="saveAppState()">
+              <label class="block text-xs font-bold text-slate-400 mb-1">Sex <span class="text-slate-500 font-normal">(Opt)</span></label>
+              <select id="input-sex" class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-400" onchange="saveAppState()">
                 <option value="">Select Sex</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -304,13 +262,12 @@
           </div>
         </div>
 
-        <!-- Navigation Buttons -->
-        <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between">
-          <button onclick="goToStep(1)" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Back to Drug
+        <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between gap-2">
+          <button onclick="goToStep(1)" class="px-4 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Drug
           </button>
-          <button onclick="validateStep2AndContinue()" class="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
-            <span>Next: Commercial Preparation</span>
+          <button onclick="validateStep2AndContinue()" class="px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-2">
+            <span>Next: Commercial Prep</span>
             <i class="fa-solid fa-arrow-right"></i>
           </button>
         </div>
@@ -320,31 +277,26 @@
     <!-- ======================================================= -->
     <!-- STEP 3: CHOOSE COMMERCIAL PREPARATION                    -->
     <!-- ======================================================= -->
-    <div id="wizard-step-3" class="wizard-step hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="pb-4 border-b border-slate-100 flex items-center justify-between">
-          <div>
-            <div class="text-xs font-mono uppercase bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded font-semibold inline-block mb-1">Step 3 of 5</div>
-            <h2 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-vial-virus text-teal-600"></i> Commercial Preparation
-            </h2>
-          </div>
-          <span id="step3-drug-badge" class="px-3 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 font-bold text-xs font-mono">
-            Noradrenaline
+    <div id="wizard-step-3" class="wizard-step hidden space-y-4">
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-sm">
+        <div class="pb-3 border-b border-slate-800 flex items-center justify-between">
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-vial text-teal-400"></i> Commercial Preparation
+          </h2>
+          <span id="step3-drug-badge" class="px-2.5 py-1 rounded-lg bg-slate-800 border border-slate-700 text-teal-300 font-bold text-xs">
+            Drug Name
           </span>
         </div>
 
-        <!-- Commercial Options List -->
-        <div class="mt-6 space-y-3" id="step3-preparations-list">
-          <!-- Dynamically populated per drug -->
+        <div class="mt-4 space-y-2.5" id="step3-preparations-list">
+          <!-- Populated dynamically per drug -->
         </div>
 
-        <!-- Navigation Buttons -->
-        <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between">
-          <button onclick="goToStep(2)" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Back to Weight
+        <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between gap-2">
+          <button onclick="goToStep(2)" class="px-4 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Weight
           </button>
-          <button onclick="goToStep(4)" class="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
+          <button onclick="goToStep(4)" class="px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-2">
             <span>Next: Choose Syringe</span>
             <i class="fa-solid fa-arrow-right"></i>
           </button>
@@ -353,50 +305,47 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- STEP 4: CHOOSE SYRINGE (CLEAN 3 OPTIONS, NO CLUTTER)     -->
+    <!-- STEP 4: CHOOSE SYRINGE (3 SIMPLE OPTIONS)               -->
     <!-- ======================================================= -->
-    <div id="wizard-step-4" class="wizard-step hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="pb-4 border-b border-slate-100">
-          <div class="text-xs font-mono uppercase bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded font-semibold inline-block mb-1">Step 4 of 5</div>
-          <h2 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-syringe text-teal-600"></i> Choose Syringe Size
+    <div id="wizard-step-4" class="wizard-step hidden space-y-4">
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-sm">
+        <div class="pb-3 border-b border-slate-800">
+          <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-syringe text-teal-400"></i> Choose Syringe Size
           </h2>
         </div>
 
-        <!-- Clean Syringe Selector (Just 3 Simple Options) -->
-        <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <!-- 50 ml -->
-          <div onclick="selectSyringe(50)" id="syringe-card-50" class="syringe-card cursor-pointer p-8 rounded-2xl border-2 transition flex flex-col items-center justify-center text-center bg-teal-50/70 border-teal-600 shadow-md ring-2 ring-teal-400">
-            <div class="w-14 h-14 rounded-2xl bg-teal-600 text-white flex items-center justify-center text-2xl mb-3 shadow">
+          <div onclick="selectSyringe(50)" id="syringe-card-50" class="syringe-card cursor-pointer p-6 rounded-2xl border-2 transition flex flex-col items-center justify-center text-center bg-teal-950/60 border-teal-400 text-white shadow active:scale-98">
+            <div class="w-12 h-12 rounded-xl bg-teal-500 text-slate-950 flex items-center justify-center text-xl mb-2 font-bold">
               <i class="fa-solid fa-syringe"></i>
             </div>
-            <div class="text-3xl font-black font-mono text-slate-900">50 mL</div>
+            <div class="text-3xl font-black font-mono">50 mL</div>
           </div>
 
           <!-- 20 ml -->
-          <div onclick="selectSyringe(20)" id="syringe-card-20" class="syringe-card cursor-pointer p-8 rounded-2xl border border-slate-300 hover:border-slate-400 transition flex flex-col items-center justify-center text-center bg-white">
-            <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center text-2xl mb-3">
+          <div onclick="selectSyringe(20)" id="syringe-card-20" class="syringe-card cursor-pointer p-6 rounded-2xl border border-slate-700 bg-slate-800 hover:border-slate-600 transition flex flex-col items-center justify-center text-center text-white active:scale-98">
+            <div class="w-12 h-12 rounded-xl bg-slate-700 text-slate-300 flex items-center justify-center text-xl mb-2 font-bold">
               <i class="fa-solid fa-syringe"></i>
             </div>
-            <div class="text-3xl font-black font-mono text-slate-900">20 mL</div>
+            <div class="text-3xl font-black font-mono">20 mL</div>
           </div>
 
           <!-- 10 ml -->
-          <div onclick="selectSyringe(10)" id="syringe-card-10" class="syringe-card cursor-pointer p-8 rounded-2xl border border-slate-300 hover:border-slate-400 transition flex flex-col items-center justify-center text-center bg-white">
-            <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-600 flex items-center justify-center text-2xl mb-3">
+          <div onclick="selectSyringe(10)" id="syringe-card-10" class="syringe-card cursor-pointer p-6 rounded-2xl border border-slate-700 bg-slate-800 hover:border-slate-600 transition flex flex-col items-center justify-center text-center text-white active:scale-98">
+            <div class="w-12 h-12 rounded-xl bg-slate-700 text-slate-300 flex items-center justify-center text-xl mb-2 font-bold">
               <i class="fa-solid fa-syringe"></i>
             </div>
-            <div class="text-3xl font-black font-mono text-slate-900">10 mL</div>
+            <div class="text-3xl font-black font-mono">10 mL</div>
           </div>
         </div>
 
-        <!-- Navigation Buttons -->
-        <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between">
-          <button onclick="goToStep(3)" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Back to Commercial Prep
+        <div class="mt-6 pt-4 border-t border-slate-800 flex items-center justify-between gap-2">
+          <button onclick="goToStep(3)" class="px-4 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Prep
           </button>
-          <button onclick="goToStep(5)" class="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2">
+          <button onclick="goToStep(5)" class="px-5 py-2.5 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs sm:text-sm rounded-xl shadow transition flex items-center gap-2">
             <span>Next: Calculation & Titration</span>
             <i class="fa-solid fa-arrow-right"></i>
           </button>
@@ -405,344 +354,326 @@
     </div>
 
     <!-- ======================================================= -->
-    <!-- STEP 5: COMBINED CALCULATION & TITRATION PAGE           -->
+    <!-- STEP 5: CALCULATION & TITRATION (HIGH CONTRAST, BIG LABELS) -->
     <!-- ======================================================= -->
-    <div id="wizard-step-5" class="wizard-step hidden space-y-6">
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
-          <div>
-            <div class="text-xs font-mono uppercase bg-teal-50 text-teal-700 px-2.5 py-0.5 rounded font-semibold inline-block mb-1">Step 5 of 5</div>
-            <h2 class="text-xl font-extrabold text-slate-800 flex items-center gap-2">
-              <i class="fa-solid fa-sliders text-teal-600"></i> Calculation & Titration
-            </h2>
-          </div>
+    <div id="wizard-step-5" class="wizard-step hidden space-y-4">
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-4 sm:p-6 shadow-sm space-y-5">
+        
+        <!-- Header & Mode Switcher -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
+          <h2 class="text-lg sm:text-xl font-extrabold text-white flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-teal-400"></i> Calculation & Titration
+          </h2>
 
-          <!-- Calculation Mode Toggle -->
-          <div class="bg-slate-100 p-1 rounded-xl flex items-center text-xs font-bold">
-            <button onclick="setCalcMode('forward')" id="btn-mode-forward" class="px-3 py-1.5 rounded-lg bg-teal-600 text-white shadow-sm transition">
+          <div class="bg-slate-800 p-1 rounded-xl flex items-center text-xs font-bold w-full sm:w-auto">
+            <button onclick="setCalcMode('forward')" id="btn-mode-forward" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-teal-600 text-white font-bold transition">
               Forward Dilution
             </button>
-            <button onclick="setCalcMode('reverse')" id="btn-mode-reverse" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition">
+            <button onclick="setCalcMode('reverse')" id="btn-mode-reverse" class="flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-400 hover:text-white transition">
               Reverse Target Mode
             </button>
           </div>
         </div>
 
-        <!-- DILUTION PREPARATION SECTION -->
-        <div id="container-calc-forward" class="mt-5 space-y-4">
-          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Input 1: mL of Drug -->
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">
-                  1. Volume of Drug to Add (<span class="font-mono text-teal-700" id="forward-drug-stock-strength">1 mg/ml</span>):
-                </label>
-                <div class="relative">
-                  <input type="number" id="input-drug-ml" step="0.1" min="0.1" value="4"
-                    class="w-full rounded-xl border border-slate-300 pl-3 pr-12 py-2 font-bold font-mono text-slate-900 text-base focus:ring-2 focus:ring-teal-200"
-                    oninput="handleDrugVolumeInput(this.value)">
-                  <span class="absolute right-3 top-2.5 text-xs font-bold text-slate-400">mL</span>
-                </div>
-              </div>
-
-              <!-- Input 2: Diluent mL -->
-              <div>
-                <div class="flex items-center justify-between mb-1">
-                  <label class="text-xs font-bold text-slate-700">2. Diluent Fluid:</label>
-                  <div class="flex items-center gap-1.5 text-[11px]">
-                    <label class="inline-flex items-center gap-1 cursor-pointer">
-                      <input type="radio" name="diluent-type" value="Normal Saline (0.9% NaCl)" checked onchange="saveAppState()" class="accent-teal-600">
-                      <span>NS 0.9%</span>
-                    </label>
-                    <label class="inline-flex items-center gap-1 cursor-pointer ml-2">
-                      <input type="radio" name="diluent-type" value="5% Dextrose (D5W)" onchange="saveAppState()" class="accent-teal-600">
-                      <span>5% Dextrose</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div class="relative">
-                  <input type="number" id="input-diluent-ml" step="0.1" min="0" value="46"
-                    class="w-full rounded-xl border border-slate-300 pl-3 pr-12 py-2 font-bold font-mono text-slate-900 text-base focus:ring-2 focus:ring-teal-200"
-                    oninput="handleDiluentInput(this.value)">
-                  <span class="absolute right-3 top-2.5 text-xs font-bold text-slate-400">mL</span>
-                </div>
-                <div class="mt-1 text-[11px] text-slate-500 flex items-center justify-between">
-                  <span>Auto-fill to <strong id="forward-syringe-capacity-badge">50 mL</strong> syringe</span>
-                  <button onclick="autoTopUpDiluent()" class="text-teal-600 hover:text-teal-800 font-bold underline">Auto-Fill</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- REVERSE TARGET MODE -->
-        <div id="container-calc-reverse" class="mt-5 space-y-4 hidden">
-          <div class="p-4 bg-teal-50/70 rounded-2xl border border-teal-200">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Target Concentration -->
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">Target Syringe Concentration:</label>
-                <div class="flex gap-2">
-                  <input type="number" id="reverse-target-conc" step="any" min="0.001" placeholder="e.g. 80"
-                    class="w-2/3 rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold text-slate-900 text-sm focus:ring-2 focus:ring-teal-200"
-                    oninput="calculateReverseFromConc(this.value)">
-                  <select id="reverse-conc-unit" class="w-1/3 rounded-xl border border-slate-300 px-2 py-2 text-xs font-mono font-bold bg-white" onchange="calculateReverseFromConc(document.getElementById('reverse-target-conc').value)">
-                    <option value="mcg/ml">mcg/mL</option>
-                    <option value="mg/ml">mg/mL</option>
-                    <option value="units/ml">units/mL</option>
-                  </select>
-                </div>
-              </div>
-
-              <!-- Target Rate at 1 ml/hr -->
-              <div>
-                <label class="block text-xs font-bold text-slate-700 mb-1">
-                  OR Target Dose at 1 mL/hr:
-                </label>
-                <div class="flex items-center gap-2">
-                  <input type="number" id="reverse-target-dose" step="any" min="0.0001" placeholder="e.g. 0.02"
-                    class="w-2/3 rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold text-slate-900 text-sm focus:ring-2 focus:ring-teal-200"
-                    oninput="calculateReverseFromDose(this.value)">
-                  <span id="reverse-target-dose-unit" class="w-1/3 text-xs font-bold text-slate-700 font-mono">mcg/kg/min</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Reverse Calculation Result Box -->
-            <div class="mt-3 p-3 rounded-xl bg-white border border-teal-300 flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div class="text-sm font-extrabold text-slate-800">
-                Required: <span id="rev-res-drug-ml" class="text-teal-700 font-mono">4.0 mL</span> of drug +
-                <span id="rev-res-diluent-ml" class="text-sky-700 font-mono">46.0 mL</span> of diluent
-              </div>
-              <button onclick="applyReverseRecipeToForward()" class="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition whitespace-nowrap">
-                Apply Recipe
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- OUTPUT CONCENTRATION & 1 ML/HR HIGHLIGHT (PROMINENT BOLD) -->
-        <div class="mt-5 space-y-4">
-          <div class="bg-slate-900 text-white rounded-2xl p-5 shadow-lg border border-slate-800">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-              <div>
-                <div class="text-xs text-slate-400 font-medium">1 mL contains:</div>
-                <div class="text-2xl sm:text-3xl font-extrabold font-mono text-emerald-400 mt-1" id="display-conc-mg-mcg">
-                  0.080 mg / 80.0 mcg
-                </div>
-              </div>
-
-              <!-- BOLD PROMINENT CALLOUT: 1 ML/HR DELIVERS -->
-              <div class="bg-teal-950/80 border-2 border-teal-500/80 rounded-xl p-4 shadow-inner">
-                <div class="text-[11px] font-bold uppercase tracking-wider text-teal-300">Pump running at 1 mL/hr delivers:</div>
-                <div class="text-2xl sm:text-3xl font-black font-mono text-amber-300 mt-1 tracking-tight" id="display-1ml-hr-dose">
-                  0.019 mcg/kg/min
-                </div>
-                <div class="text-xs text-teal-200 mt-1 font-mono" id="display-1ml-hr-total-min">
-                  Total: 1.33 mcg/min
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- INTERACTIVE LIVE PUMP TITRATOR & METRIC SELECTOR -->
-        <div class="mt-6 p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-teal-950 to-slate-900 text-white shadow-xl border border-slate-800">
-          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <!-- 1. DILUTION VOLUMES (FORWARD) -->
+        <div id="container-calc-forward" class="bg-slate-950 rounded-2xl border border-slate-800 p-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <span class="text-xs uppercase font-mono tracking-wider text-teal-400 font-bold">Syringe Pump Rate</span>
-              <div class="flex items-center gap-2 mt-2">
-                <button onclick="adjustPumpRate(-1.0)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm flex items-center justify-center transition border border-slate-700 active:scale-95">
+              <label class="block text-sm font-bold text-slate-200 mb-1.5">
+                1. mL of Drug (<span class="font-mono text-teal-400" id="forward-drug-stock-strength">1 mg/mL</span>):
+              </label>
+              <div class="relative">
+                <input type="number" id="input-drug-ml" step="0.1" min="0.1" value="4"
+                  class="w-full rounded-xl bg-slate-850 bg-slate-900 border-2 border-slate-700 pl-3.5 pr-12 py-3 font-extrabold font-mono text-white text-xl focus:border-teal-400 focus:outline-none"
+                  oninput="handleDrugVolumeInput(this.value)">
+                <span class="absolute right-3.5 top-3.5 text-xs font-bold text-slate-400">mL</span>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-sm font-bold text-slate-200">2. Diluent Fluid:</label>
+                <div class="flex items-center gap-2 text-xs">
+                  <label class="inline-flex items-center gap-1 cursor-pointer text-slate-300">
+                    <input type="radio" name="diluent-type" value="Normal Saline (0.9% NaCl)" checked onchange="saveAppState()" class="accent-teal-500">
+                    <span>NS 0.9%</span>
+                  </label>
+                  <label class="inline-flex items-center gap-1 cursor-pointer text-slate-300">
+                    <input type="radio" name="diluent-type" value="5% Dextrose (D5W)" onchange="saveAppState()" class="accent-teal-500">
+                    <span>5% Dextrose</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="relative">
+                <input type="number" id="input-diluent-ml" step="0.1" min="0" value="46"
+                  class="w-full rounded-xl bg-slate-900 border-2 border-slate-700 pl-3.5 pr-12 py-3 font-extrabold font-mono text-white text-xl focus:border-teal-400 focus:outline-none"
+                  oninput="handleDiluentInput(this.value)">
+                <span class="absolute right-3.5 top-3.5 text-xs font-bold text-slate-400">mL</span>
+              </div>
+              <div class="mt-1.5 flex items-center justify-between text-xs text-slate-400">
+                <span>Total to <strong id="forward-syringe-capacity-badge" class="text-white">50 mL</strong> syringe</span>
+                <button onclick="autoTopUpDiluent()" class="text-teal-400 hover:text-teal-300 font-bold underline">Auto-Fill</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. REVERSE TARGET DRAWER -->
+        <div id="container-calc-reverse" class="bg-slate-950 rounded-2xl border border-teal-500/40 p-4 hidden space-y-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-bold text-slate-200 uppercase mb-1">Target Concentration:</label>
+              <div class="flex gap-2">
+                <input type="number" id="reverse-target-conc" step="any" min="0.001" placeholder="80"
+                  class="w-2/3 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 font-mono font-bold text-white text-sm focus:border-teal-400 focus:outline-none"
+                  oninput="calculateReverseFromConc(this.value)">
+                <select id="reverse-conc-unit" class="w-1/3 rounded-xl border border-slate-700 bg-slate-900 px-2 py-2 text-xs font-mono font-bold text-teal-300 focus:outline-none" onchange="calculateReverseFromConc(document.getElementById('reverse-target-conc').value)">
+                  <option value="mcg/ml">mcg/mL</option>
+                  <option value="mg/ml">mg/mL</option>
+                  <option value="units/ml">units/mL</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-200 uppercase mb-1">OR Target Dose at 1 mL/hr:</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="reverse-target-dose" step="any" min="0.0001" placeholder="0.02"
+                  class="w-2/3 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 font-mono font-bold text-white text-sm focus:border-teal-400 focus:outline-none"
+                  oninput="calculateReverseFromDose(this.value)">
+                <span id="reverse-target-dose-unit" class="w-1/3 text-xs font-bold text-teal-300 font-mono">mcg/kg/min</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-3 rounded-xl bg-slate-900 border border-teal-500/30 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+            <div class="text-xs sm:text-sm font-bold text-slate-200">
+              Required: <span id="rev-res-drug-ml" class="text-teal-400 font-mono font-extrabold">4.0 mL</span> of drug +
+              <span id="rev-res-diluent-ml" class="text-sky-400 font-mono font-extrabold">46.0 mL</span> of diluent
+            </div>
+            <button onclick="applyReverseRecipeToForward()" class="w-full sm:w-auto px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition">
+              Apply Recipe
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. OUTPUT CONCENTRATION & 1 ML/HR DELIVERY (BIG & HIGH CONTRAST) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <!-- 1 mL CONTAINS BOX -->
+          <div class="bg-slate-950 rounded-2xl p-4 sm:p-5 border-2 border-slate-800">
+            <div class="text-xs sm:text-sm font-extrabold text-slate-300 uppercase tracking-wider">
+              1 mL contains:
+            </div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-white mt-1.5" id="display-conc-mg-mcg">
+              0.080 mg / 80.0 mcg
+            </div>
+          </div>
+
+          <!-- PUMP AT 1 ML/HR DELIVERS (BIG, BOLD, HIGH CONTRAST) -->
+          <div class="bg-slate-950 rounded-2xl p-4 sm:p-5 border-2 border-teal-500/70 shadow-sm">
+            <div class="text-xs sm:text-sm font-black text-teal-300 uppercase tracking-wider">
+              PUMP RUNNING AT 1 ML/HR DELIVERS:
+            </div>
+            <div class="text-2xl sm:text-3xl font-black font-mono text-amber-300 mt-1.5" id="display-1ml-hr-dose">
+              0.019 mcg/kg/min
+            </div>
+            <div class="text-xs text-slate-300 mt-1 font-mono font-semibold" id="display-1ml-hr-total-min">
+              Total: 1.33 mcg/min
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. SYRINGE PUMP RATE DIAL (BIG & CLEAR) -->
+        <div class="bg-slate-950 rounded-2xl p-4 sm:p-6 border-2 border-slate-800 space-y-5">
+          <div>
+            <div class="text-xs sm:text-sm font-extrabold text-slate-300 uppercase tracking-wider mb-2">
+              SYRINGE PUMP RATE
+            </div>
+
+            <div class="flex items-center justify-between flex-wrap gap-3">
+              <div class="flex items-center gap-1.5 sm:gap-2">
+                <button onclick="adjustPumpRate(-1.0)" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-black text-sm border border-slate-700 flex items-center justify-center active:scale-95 transition">
                   -1
                 </button>
-                <button onclick="adjustPumpRate(-0.1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center transition border border-slate-700 active:scale-95">
+                <button onclick="adjustPumpRate(-0.1)" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 flex items-center justify-center active:scale-95 transition">
                   -0.1
                 </button>
                 <div class="relative">
                   <input type="number" id="live-pump-speed" step="0.1" min="0" max="150" value="5.0"
-                    class="w-28 text-center text-3xl font-extrabold font-mono text-amber-300 bg-slate-800/90 border-2 border-teal-500/80 rounded-2xl py-1 px-2 focus:outline-none focus:ring-2 focus:ring-teal-300"
+                    class="w-24 sm:w-28 text-center text-3xl sm:text-4xl font-black font-mono text-white bg-slate-900 border-2 border-teal-500 rounded-2xl py-1.5 px-2 focus:outline-none"
                     oninput="handlePumpRateChange(this.value)">
                 </div>
-                <button onclick="adjustPumpRate(0.1)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center transition border border-slate-700 active:scale-95">
+                <button onclick="adjustPumpRate(0.1)" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 flex items-center justify-center active:scale-95 transition">
                   +0.1
                 </button>
-                <button onclick="adjustPumpRate(1.0)" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm flex items-center justify-center transition border border-slate-700 active:scale-95">
+                <button onclick="adjustPumpRate(1.0)" class="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-black text-sm border border-slate-700 flex items-center justify-center active:scale-95 transition">
                   +1
                 </button>
-                <span class="text-base font-bold font-mono text-slate-300 ml-1">mL/hr</span>
+                <span class="text-base sm:text-lg font-bold font-mono text-slate-300 ml-1">mL/hr</span>
+              </div>
+
+              <!-- Quick Rate Buttons -->
+              <div class="flex items-center gap-1.5">
+                <button onclick="setPumpRate(1)" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">1</button>
+                <button onclick="setPumpRate(2)" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">2</button>
+                <button onclick="setPumpRate(3)" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">3</button>
+                <button onclick="setPumpRate(5)" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">5</button>
+                <button onclick="setPumpRate(10)" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">10</button>
               </div>
             </div>
 
-            <!-- Quick Rate Presets -->
-            <div class="flex flex-wrap items-center gap-1.5 sm:justify-end">
-              <button onclick="setPumpRate(1)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">1</button>
-              <button onclick="setPumpRate(2)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">2</button>
-              <button onclick="setPumpRate(3)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">3</button>
-              <button onclick="setPumpRate(5)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">5</button>
-              <button onclick="setPumpRate(10)" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-200 border border-slate-700">10</button>
+            <!-- Slider -->
+            <div class="mt-4">
+              <input type="range" id="slider-live-rate" min="0.1" max="30" step="0.1" value="5"
+                class="w-full h-3 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-400"
+                oninput="handlePumpRateChange(this.value)">
             </div>
           </div>
 
-          <!-- Slider -->
-          <div class="mt-4">
-            <input type="range" id="slider-live-rate" min="0.1" max="30" step="0.1" value="5"
-              class="w-full h-2.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-teal-400"
-              oninput="handlePumpRateChange(this.value)">
-          </div>
+          <!-- 5. THREE-OPTION DISPLAY METRIC TOGGLE (ONLY SHOWS SELECTED METRIC) -->
+          <div class="pt-4 border-t border-slate-800 space-y-4">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+              <span class="text-xs sm:text-sm font-extrabold text-slate-300 uppercase tracking-wider">
+                CHOOSE DISPLAY METRIC:
+              </span>
 
-          <!-- 3-WAY TITRATION METRIC SWITCHER (ONLY SHOW THE SELECTED METRIC) -->
-          <div class="mt-6 pt-5 border-t border-slate-800">
-            <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-              <span class="text-xs uppercase font-bold text-teal-300 tracking-wider">Choose Display Metric:</span>
-              
-              <!-- Clean 3-Option Button Switcher -->
-              <div class="inline-flex rounded-xl bg-slate-800/90 p-1 border border-slate-700">
+              <div class="inline-flex rounded-xl bg-slate-900 p-1 border border-slate-700 w-full sm:w-auto">
                 <button type="button" onclick="selectDisplayMetric('mcg/kg/min')" id="metric-btn-mcg-kg-min"
-                  class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-teal-600 text-white shadow">
+                  class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold transition bg-teal-500 text-slate-950 font-black shadow">
                   mcg/kg/min
                 </button>
                 <button type="button" onclick="selectDisplayMetric('mcg/min')" id="metric-btn-mcg-min"
-                  class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white transition">
+                  class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white transition">
                   mcg/min
                 </button>
                 <button type="button" onclick="selectDisplayMetric('mg/hr')" id="metric-btn-mg-hr"
-                  class="px-3 py-1.5 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white transition">
+                  class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white transition">
                   mg/hr
                 </button>
               </div>
             </div>
 
-            <!-- SINGLE PROMINENT DELIVERED DOSE DISPLAY -->
-            <div class="bg-slate-800/90 rounded-2xl p-6 border border-slate-700 text-center">
-              <span class="text-xs uppercase font-bold text-slate-400 tracking-wider block" id="selected-metric-label">Delivered Dose:</span>
-              <div class="text-5xl sm:text-6xl font-black font-mono text-emerald-300 mt-2 tracking-tight" id="selected-metric-value">
+            <!-- 6. DELIVERED DOSE (BIG, CLEAR, HIGH VISIBILITY) -->
+            <div class="bg-slate-900 rounded-2xl p-6 border-2 border-slate-800 text-center">
+              <div class="text-xs sm:text-sm font-black text-slate-300 uppercase tracking-widest" id="selected-metric-label">
+                DELIVERED DOSE:
+              </div>
+              <div class="text-5xl sm:text-6xl font-black font-mono text-emerald-400 mt-2 tracking-tight" id="selected-metric-value">
                 0.095
               </div>
-              <div class="text-base font-bold text-teal-200 font-mono mt-1" id="selected-metric-unit">
+              <div class="text-lg sm:text-xl font-extrabold text-teal-300 font-mono mt-1" id="selected-metric-unit">
                 mcg / kg / min
               </div>
             </div>
           </div>
         </div>
 
-        <!-- REFERENCE DOSES & CLINICAL SCENARIOS (Integrated directly on this page) -->
-        <div class="mt-6 p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-slate-800 uppercase flex items-center gap-1.5">
-              <i class="fa-solid fa-book-medical text-teal-600"></i> Reference Dosing & Scenarios
+        <!-- 7. REFERENCE DOSING & CLINICAL SCENARIOS -->
+        <div class="bg-slate-950 rounded-2xl border border-slate-800 p-4 space-y-2.5">
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <span class="text-xs sm:text-sm font-extrabold text-white uppercase flex items-center gap-1.5">
+              <i class="fa-solid fa-book-medical text-teal-400"></i> Reference Dosing & Scenarios
             </span>
-            <span class="text-xs font-mono font-bold text-teal-700" id="step5-ref-range">Ref: 0.01 - 3.0 mcg/kg/min</span>
+            <span class="text-xs font-mono font-bold text-teal-300" id="step5-ref-range">Ref: 0.01 - 3.0 mcg/kg/min</span>
           </div>
 
-          <div class="p-3 bg-amber-50 rounded-lg border border-amber-200 text-xs text-amber-950 leading-relaxed" id="step5-scenario-box">
-            <!-- Scenario loaded dynamically -->
+          <div class="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed" id="step5-scenario-box">
+            <!-- Scenarios loaded dynamically -->
           </div>
         </div>
 
         <!-- Navigation Buttons -->
-        <div class="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between no-print">
-          <button onclick="goToStep(4)" class="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 rounded-xl transition flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Back to Syringe
+        <div class="pt-4 border-t border-slate-800 flex items-center justify-between gap-2">
+          <button onclick="goToStep(4)" class="px-4 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Syringe
           </button>
-          <button onclick="resetCalculator(true)" class="px-4 py-2 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 rounded-xl transition">
+          <button onclick="resetCalculator(true)" class="px-4 py-2.5 text-xs font-bold text-rose-300 bg-rose-950/40 hover:bg-rose-900/50 border border-rose-800/60 rounded-xl transition">
             Start New Calculation
           </button>
         </div>
+
       </div>
     </div>
 
   </main>
 
   <!-- ======================================================= -->
-  <!-- MODAL: SETTINGS, DOCTOR PROFILE & DRUG FORMULARY MANAGER -->
+  <!-- MODAL: SETTINGS, DOCTOR PROFILE & FORMULARY             -->
   <!-- ======================================================= -->
-  <div id="settings-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto no-print">
-    <div class="bg-white rounded-3xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8">
+  <div id="settings-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-3 overflow-y-auto">
+    <div class="bg-slate-900 rounded-3xl max-w-xl w-full shadow-2xl border border-slate-800 overflow-hidden my-6">
       
       <!-- Modal Header -->
-      <div class="p-5 bg-slate-900 text-white flex items-center justify-between">
-        <div class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-teal-500 text-slate-950 flex items-center justify-center font-bold">
+      <div class="p-4 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-teal-500 text-slate-950 flex items-center justify-center font-bold text-xs">
             <i class="fa-solid fa-sliders"></i>
           </div>
-          <div>
-            <h3 class="text-base font-bold text-white">System Settings & Formulary Manager</h3>
-            <p class="text-xs text-slate-400">Doctor Profile, Custom Drug Formulations & Database</p>
-          </div>
+          <h3 class="text-sm font-bold text-white">Settings & Formulary</h3>
         </div>
-        <button onclick="closeModal('settings-modal')" class="text-slate-400 hover:text-white text-lg p-1">
-          <i class="fa-solid fa-xmark"></i>
+        <button onclick="closeModal('settings-modal')" class="text-slate-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
         </button>
       </div>
 
       <!-- Settings Sub-Tabs -->
-      <div class="bg-slate-100 border-b border-slate-200 px-6 flex space-x-4 text-xs font-bold">
-        <button onclick="switchSettingsTab('settings-tab-profile')" id="btn-stab-profile" class="py-3 border-b-2 border-teal-600 text-teal-700">
-          <i class="fa-solid fa-user-doctor mr-1"></i> Doctor Profile
+      <div class="bg-slate-950/60 border-b border-slate-800 px-4 flex space-x-3 text-xs font-bold">
+        <button onclick="switchSettingsTab('settings-tab-profile')" id="btn-stab-profile" class="py-2.5 border-b-2 border-teal-500 text-teal-300">
+          Doctor Profile
         </button>
-        <button onclick="switchSettingsTab('settings-tab-drugs')" id="btn-stab-drugs" class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800">
-          <i class="fa-solid fa-flask-vial mr-1"></i> Add / Edit Drugs
+        <button onclick="switchSettingsTab('settings-tab-drugs')" id="btn-stab-drugs" class="py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          Add Drug
         </button>
-        <button onclick="switchSettingsTab('settings-tab-db')" id="btn-stab-db" class="py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800">
-          <i class="fa-solid fa-database mr-1"></i> Active Formulary
+        <button onclick="switchSettingsTab('settings-tab-db')" id="btn-stab-db" class="py-2.5 border-b-2 border-transparent text-slate-400 hover:text-slate-200">
+          Formulary (<span id="set-formulary-count">0</span>)
         </button>
       </div>
 
-      <div class="p-6 max-h-[75vh] overflow-y-auto space-y-6">
+      <div class="p-4 max-h-[70vh] overflow-y-auto space-y-4">
 
         <!-- SUB-TAB 1: DOCTOR PROFILE -->
-        <div id="settings-tab-profile" class="settings-subcontent space-y-4">
-          <p class="text-xs text-slate-500">Your details appear on calculation summary printouts and active case headers.</p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Doctor Name</label>
-              <input type="text" id="set-doc-name" placeholder="e.g. Dr. A. Sharma"
-                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-200">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Registration / License Number</label>
-              <input type="text" id="set-doc-reg" placeholder="e.g. MCI 74829 / GMC 9123"
-                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-200">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Designation</label>
-              <input type="text" id="set-doc-designation" placeholder="e.g. Consultant Anaesthesiologist"
-                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-200">
-            </div>
-            <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Workplace / Hospital</label>
-              <input type="text" id="set-doc-workplace" placeholder="e.g. University Teaching Hospital OT"
-                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-teal-200">
-            </div>
+        <div id="settings-tab-profile" class="settings-subcontent space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Doctor Name</label>
+            <input type="text" id="set-doc-name" placeholder="Dr. Anaesthesiologist"
+              class="w-full rounded-xl border border-slate-700 bg-slate-850 bg-slate-800 px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-400">
           </div>
-          <div class="pt-3 flex justify-end">
-            <button onclick="saveDoctorProfile()" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">
-              Save Doctor Profile
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Registration / License</label>
+            <input type="text" id="set-doc-reg" placeholder="e.g. MCI 74829"
+              class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-400">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Designation</label>
+            <input type="text" id="set-doc-designation" placeholder="Consultant Anaesthesiologist"
+              class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-400">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-300 mb-1">Workplace / Hospital</label>
+            <input type="text" id="set-doc-workplace" placeholder="Operation Theatre"
+              class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white focus:outline-none focus:border-teal-400">
+          </div>
+          <div class="pt-2 flex justify-end">
+            <button onclick="saveDoctorProfile()" class="px-5 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition">
+              Save Profile
             </button>
           </div>
         </div>
 
-        <!-- SUB-TAB 2: ADD / EDIT DRUGS -->
-        <div id="settings-tab-drugs" class="settings-subcontent hidden space-y-4">
-          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h4 class="text-sm font-bold text-slate-800" id="form-drug-header">Add New Drug to Formulary</h4>
-            <button onclick="resetDrugForm()" class="text-xs text-slate-500 hover:text-slate-800">Clear Form</button>
-          </div>
+        <!-- SUB-TAB 2: ADD DRUG -->
+        <div id="settings-tab-drugs" class="settings-subcontent hidden space-y-3">
+          <form id="custom-drug-form" onsubmit="handleDrugFormSubmit(event)" class="space-y-3 text-xs">
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Generic Name *</label>
+              <input type="text" id="form-drug-name" required placeholder="e.g. Vasopressin"
+                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-white">
+            </div>
 
-          <form id="custom-drug-form" onsubmit="handleDrugFormSubmit(event)" class="space-y-4 text-xs">
-            <input type="hidden" id="drug-form-id" value="">
-
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="grid grid-cols-2 gap-2">
               <div>
-                <label class="block font-bold text-slate-700 mb-1">Drug Generic Name *</label>
-                <input type="text" id="form-drug-name" required placeholder="e.g. Vasopressin"
-                  class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-teal-200">
-              </div>
-
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Category *</label>
-                <select id="form-drug-category" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white">
+                <label class="block font-bold text-slate-300 mb-1">Category *</label>
+                <select id="form-drug-category" required class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-white">
                   <option value="inotropes">Inotropes & Vasopressors</option>
                   <option value="sedatives">Sedatives</option>
                   <option value="analgesics">Analgesics</option>
@@ -752,103 +683,84 @@
               </div>
 
               <div>
-                <label class="block font-bold text-slate-700 mb-1">Dosing Unit Format *</label>
-                <select id="form-drug-unit" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-mono">
-                  <option value="mcg/kg/min">mcg/kg/min (Vasopressors/Inotropes)</option>
-                  <option value="mcg/min">mcg/min (Weight-independent: NTG, SNP)</option>
-                  <option value="mcg/kg/hr">mcg/kg/hr (Dexmedetomidine, Fentanyl)</option>
-                  <option value="mg/kg/hr">mg/kg/hr (Propofol infusions)</option>
-                  <option value="units/min">units/min (Vasopressin)</option>
+                <label class="block font-bold text-slate-300 mb-1">Dosing Unit *</label>
+                <select id="form-drug-unit" required class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-white font-mono">
+                  <option value="mcg/kg/min">mcg/kg/min</option>
+                  <option value="mcg/min">mcg/min</option>
+                  <option value="mcg/kg/hr">mcg/kg/hr</option>
+                  <option value="mg/kg/hr">mg/kg/hr</option>
+                  <option value="units/min">units/min</option>
                 </select>
               </div>
             </div>
 
-            <!-- Commercial Prep Specs -->
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-              <span class="font-bold text-slate-700 block">Commercial Packaging Specifications:</span>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label class="block text-slate-600 mb-1">Ampoule Strength (mg/ml, mcg/ml, U/ml):</label>
-                  <input type="number" id="form-drug-strength-val" step="any" required placeholder="e.g. 1"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-mono">
-                </div>
-                <div>
-                  <label class="block text-slate-600 mb-1">Strength Unit:</label>
-                  <select id="form-drug-strength-unit" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs bg-white font-mono">
-                    <option value="mg/ml">mg / mL</option>
-                    <option value="mcg/ml">mcg / mL</option>
-                    <option value="units/ml">units / mL</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-slate-600 mb-1">Ampoule Size (mL):</label>
-                  <input type="number" id="form-drug-amp-vol" step="any" required placeholder="e.g. 2"
-                    class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs font-mono">
-                </div>
-              </div>
-
+            <div class="grid grid-cols-3 gap-2">
               <div>
-                <label class="block text-slate-600 mb-1">Packaging Label Text:</label>
-                <input type="text" id="form-drug-pack-label" placeholder="e.g. 2 ml ampoule (4mg bitartrate = 2mg base)"
-                  class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs">
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block font-bold text-slate-700 mb-1">Standard Dose Range</label>
-                <input type="text" id="form-drug-range" placeholder="e.g. 0.01 - 3.0 mcg/kg/min"
-                  class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs">
+                <label class="block text-slate-400 mb-1">Strength:</label>
+                <input type="number" id="form-drug-strength-val" step="any" required placeholder="1"
+                  class="w-full rounded-xl border border-slate-700 bg-slate-800 px-2 py-2 text-white font-mono">
               </div>
               <div>
-                <label class="block font-bold text-slate-700 mb-1">Ampoule Image (URL or uploaded file)</label>
-                <input type="text" id="form-drug-img" placeholder="https://example.com/ampoule.jpg"
-                  class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs">
+                <label class="block text-slate-400 mb-1">Unit:</label>
+                <select id="form-drug-strength-unit" class="w-full rounded-xl border border-slate-700 bg-slate-800 px-2 py-2 text-white font-mono">
+                  <option value="mg/ml">mg/mL</option>
+                  <option value="mcg/ml">mcg/mL</option>
+                  <option value="units/ml">units/mL</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-slate-400 mb-1">Ampoule (mL):</label>
+                <input type="number" id="form-drug-amp-vol" step="any" required placeholder="2"
+                  class="w-full rounded-xl border border-slate-700 bg-slate-800 px-2 py-2 text-white font-mono">
               </div>
             </div>
 
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Clinical Scenarios & Special Notes</label>
-              <textarea id="form-drug-scenarios" rows="2" placeholder="e.g. Routine shock 0.02-0.5 mcg/kg/min vs Septic shock up to 1.0-2.0 mcg/kg/min."
-                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs"></textarea>
+              <label class="block text-slate-400 mb-1">Packaging Label Text:</label>
+              <input type="text" id="form-drug-pack-label" placeholder="2 mL Ampoule (4 mg bitartrate = 2 mg base)"
+                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-white">
             </div>
 
             <div>
-              <label class="block font-bold text-slate-700 mb-1">Safety & Warnings</label>
-              <textarea id="form-drug-warnings" rows="2" placeholder="e.g. Central line mandatory. Avoid peripheral extravasation."
-                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs"></textarea>
+              <label class="block font-bold text-slate-300 mb-1">Dose Range</label>
+              <input type="text" id="form-drug-range" placeholder="0.01 - 3.0 mcg/kg/min"
+                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-white">
             </div>
 
-            <div class="pt-2 flex justify-end gap-2">
-              <button type="submit" class="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow transition">
-                Save Drug to Formulary
+            <div>
+              <label class="block font-bold text-slate-300 mb-1">Clinical Scenarios</label>
+              <textarea id="form-drug-scenarios" rows="2" placeholder="Septic shock vs routine hypovolemia notes..."
+                class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-white"></textarea>
+            </div>
+
+            <div class="pt-1 flex justify-end">
+              <button type="submit" class="px-5 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs rounded-xl shadow transition">
+                Save Drug
               </button>
             </div>
           </form>
         </div>
 
-        <!-- SUB-TAB 3: ACTIVE FORMULARY LIST -->
-        <div id="settings-tab-db" class="settings-subcontent hidden space-y-4">
+        <!-- SUB-TAB 3: FORMULARY LIST -->
+        <div id="settings-tab-db" class="settings-subcontent hidden space-y-3">
           <div class="flex items-center justify-between">
-            <h4 class="text-xs font-bold text-slate-700 uppercase">Hospital Formulary Directory (<span id="set-formulary-count">0</span> items)</h4>
-            <button onclick="restoreDefaultFormulary()" class="text-xs text-rose-600 hover:underline">
-              <i class="fa-solid fa-rotate-left mr-1"></i> Reset to Standard Clinical Database
+            <span class="text-xs text-slate-400">Current active drugs in system</span>
+            <button onclick="restoreDefaultFormulary()" class="text-xs text-rose-400 hover:underline">
+              Restore Defaults
             </button>
           </div>
 
-          <div class="border border-slate-200 rounded-xl overflow-hidden">
+          <div class="border border-slate-800 rounded-xl overflow-hidden">
             <table class="w-full text-left text-xs">
-              <thead class="bg-slate-50 text-slate-600 uppercase border-b border-slate-200">
+              <thead class="bg-slate-950 text-slate-400 uppercase border-b border-slate-800">
                 <tr>
-                  <th class="p-3">Drug</th>
-                  <th class="p-3">Category</th>
-                  <th class="p-3">Packaging</th>
-                  <th class="p-3">Unit</th>
-                  <th class="p-3 text-right">Actions</th>
+                  <th class="p-2.5">Drug</th>
+                  <th class="p-2.5">Unit</th>
+                  <th class="p-2.5 text-right">Delete</th>
                 </tr>
               </thead>
-              <tbody id="settings-formulary-table" class="divide-y divide-slate-100">
-                <!-- Dynamically populated -->
+              <tbody id="settings-formulary-table" class="divide-y divide-slate-800">
+                <!-- Populated dynamically -->
               </tbody>
             </table>
           </div>
@@ -856,29 +768,23 @@
 
       </div>
 
-      <!-- Modal Footer -->
-      <div class="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
-        <button onclick="closeModal('settings-modal')" class="px-4 py-2 bg-slate-800 text-white font-bold text-xs rounded-xl hover:bg-slate-700 transition">
-          Done
+      <div class="p-3 bg-slate-950 border-t border-slate-800 flex justify-end">
+        <button onclick="closeModal('settings-modal')" class="px-4 py-1.5 bg-slate-800 text-slate-200 font-bold text-xs rounded-xl hover:bg-slate-700 transition">
+          Close
         </button>
       </div>
-
     </div>
   </div>
 
-  <!-- NOTIFICATION TOAST -->
-  <div id="clinical-toast" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 transition-all transform translate-y-20 opacity-0 pointer-events-none no-print">
-    <i class="fa-solid fa-circle-check text-teal-400 text-sm"></i>
+  <!-- TOAST NOTIFICATION -->
+  <div id="clinical-toast" class="fixed bottom-4 right-4 z-50 bg-slate-800 border border-slate-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2 transition-all transform translate-y-20 opacity-0 pointer-events-none">
+    <i class="fa-solid fa-circle-check text-teal-400"></i>
     <span id="toast-text">Message</span>
   </div>
 
-  <!-- CLINICAL JAVASCRIPT LOGIC ENGINE -->
+  <!-- CLINICAL SCRIPT -->
   <script>
-    /* ==========================================================================
-       1. STANDARD PHARMACOPEIA DATABASE
-       ========================================================================== */
     const DEFAULT_DRUGS = [
-      // 1. INOTROPES & VASOPRESSORS
       {
         id: 'noradrenaline',
         name: 'Noradrenaline',
@@ -888,13 +794,12 @@
           {
             id: 'norad_std_2ml',
             label: '2 mL Ampoule (4 mg Noradrenaline bitartrate = 2 mg base)',
-            strengthVal: 1, // 1 mg base / ml
+            strengthVal: 1,
             strengthUnit: 'mg/ml',
             ampVol: 2,
             totalContent: '2 mg base / ampoule',
             defaultMlToDraw: 4,
-            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline',
-            isStandard: true
+            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline'
           },
           {
             id: 'norad_4ml',
@@ -904,16 +809,14 @@
             ampVol: 4,
             totalContent: '4 mg base / ampoule',
             defaultMlToDraw: 4,
-            recommendedDiluent: '5% Dextrose (D5W)',
-            isStandard: false
+            recommendedDiluent: '5% Dextrose (D5W)'
           }
         ],
         range: '0.01 - 3.0 mcg/kg/min',
         scenarios: {
-          title: 'Septic Shock vs Routine Hypovolemic Shock',
-          body: '<strong>Routine Shock:</strong> 0.02 - 0.5 mcg/kg/min after volume resuscitation.<br><strong>Septic Shock (Surviving Sepsis):</strong> Target MAP ≥ 65 mmHg. Escalate to 0.25 - 1.0+ mcg/kg/min. Add Vasopressin 0.03 U/min if refractory.'
-        },
-        warnings: 'Potent alpha-1 vasoconstriction. Central venous catheter preferred.'
+          title: 'Septic Shock vs Hypovolemic Shock',
+          body: '<strong>Routine Shock:</strong> 0.02 - 0.5 mcg/kg/min after fluids.<br><strong>Septic Shock (Surviving Sepsis):</strong> Target MAP ≥ 65 mmHg. Titrate up to 1.0 - 2.0+ mcg/kg/min. Add Vasopressin 0.03 U/min if refractory.'
+        }
       },
       {
         id: 'phenylephrine',
@@ -929,16 +832,14 @@
             ampVol: 1,
             totalContent: '10 mg / ampoule',
             defaultMlToDraw: 1,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '0.1 - 2.0 mcg/kg/min',
         scenarios: {
           title: 'Spinal Hypotension vs Vasoplegia',
-          body: '<strong>Spinal Hypotension:</strong> 0.1 - 0.5 mcg/kg/min or boluses without tachycardia.'
-        },
-        warnings: 'Pure alpha-1 agonist. Watch for reflex bradycardia.'
+          body: '<strong>Spinal Hypotension:</strong> 0.1 - 0.5 mcg/kg/min without inducing reflex tachycardia.'
+        }
       },
       {
         id: 'vasopressin',
@@ -954,16 +855,14 @@
             ampVol: 1,
             totalContent: '20 Units / ampoule',
             defaultMlToDraw: 1,
-            recommendedDiluent: 'Normal Saline or D5W',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline or D5W'
           }
         ],
         range: '0.01 - 0.04 units/min',
         scenarios: {
           title: 'Refractory Septic Shock',
-          body: '<strong>Septic Shock:</strong> Run fixed rate of 0.03 units/min as catecholamine-sparing agent.'
-        },
-        warnings: 'Do NOT titrate rapidly.'
+          body: '<strong>Septic Shock:</strong> Run fixed rate of 0.03 units/min as catecholamine sparing agent.'
+        }
       },
       {
         id: 'dopamine',
@@ -979,16 +878,14 @@
             ampVol: 5,
             totalContent: '200 mg / ampoule',
             defaultMlToDraw: 5,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '2 - 20 mcg/kg/min',
         scenarios: {
-          title: 'Dose-Dependent Receptor Affinity',
-          body: '<strong>Low (1-3):</strong> Dopaminergic. <strong>Intermediate (3-10):</strong> Beta-1 inotropic. <strong>High (10-20):</strong> Alpha-1 vasoconstriction.'
-        },
-        warnings: 'Tachyarrhythmia risk.'
+          title: 'Dose Affinity',
+          body: '<strong>Low (1-3):</strong> Renal dopaminergic. <strong>Intermediate (3-10):</strong> Beta-1 inotropic. <strong>High (10-20):</strong> Alpha vasoconstriction.'
+        }
       },
       {
         id: 'dobutamine',
@@ -1004,16 +901,14 @@
             ampVol: 20,
             totalContent: '250 mg / vial',
             defaultMlToDraw: 20,
-            recommendedDiluent: 'Normal Saline or D5W',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline or D5W'
           }
         ],
         range: '2.5 - 20 mcg/kg/min',
         scenarios: {
           title: 'Cardiogenic Shock',
-          body: '<strong>Inotropic Support:</strong> 2.5 - 10 mcg/kg/min. May combine with Noradrenaline if hypotensive.'
-        },
-        warnings: 'Beta-2 peripheral vasodilation may cause hypotension.'
+          body: '<strong>Inotropic Support:</strong> 2.5 - 10 mcg/kg/min. Combine with Noradrenaline if hypotensive.'
+        }
       },
       {
         id: 'adrenaline',
@@ -1029,16 +924,14 @@
             ampVol: 1,
             totalContent: '1 mg / ampoule',
             defaultMlToDraw: 4,
-            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline',
-            isStandard: true
+            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline'
           }
         ],
         range: '0.01 - 1.0 mcg/kg/min',
         scenarios: {
-          title: 'Severe Anaphylaxis & Shock',
-          body: '<strong>Anaphylaxis / Post-Resuscitation:</strong> 0.05 - 0.2 mcg/kg/min.'
-        },
-        warnings: 'Potent chronotrope and inotrope. Causes transient hyperlactatemia.'
+          title: 'Anaphylaxis & Shock',
+          body: '<strong>Anaphylaxis/Post-Arrest:</strong> 0.05 - 0.2 mcg/kg/min continuous infusion.'
+        }
       },
       {
         id: 'isoprenaline',
@@ -1054,19 +947,15 @@
             ampVol: 1,
             totalContent: '2 mg / ampoule',
             defaultMlToDraw: 1,
-            recommendedDiluent: '5% Dextrose (D5W)',
-            isStandard: true
+            recommendedDiluent: '5% Dextrose (D5W)'
           }
         ],
         range: '0.01 - 0.2 mcg/kg/min',
         scenarios: {
           title: 'Symptomatic Bradycardia',
-          body: '<strong>Heart Block:</strong> Bridge to transvenous pacing.'
-        },
-        warnings: 'Beta-1 and Beta-2 agonist. May cause hypotension.'
+          body: '<strong>Heart Block:</strong> Bridge to pacemaker insertion.'
+        }
       },
-
-      // 2. SEDATIVES
       {
         id: 'midazolam',
         name: 'Midazolam',
@@ -1081,16 +970,14 @@
             ampVol: 5,
             totalContent: '5 mg / ampoule',
             defaultMlToDraw: 50,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '0.02 - 0.1 mg/kg/hr (0.3 - 1.7 mcg/kg/min)',
         scenarios: {
           title: 'ICU Sedation',
-          body: '<strong>ICU Sedation:</strong> 0.02 - 0.1 mg/kg/hr. Daily spontaneous awakening trials.'
-        },
-        warnings: 'Active metabolite accumulates in renal failure.'
+          body: '<strong>ICU Sedation:</strong> 0.02 - 0.1 mg/kg/hr.'
+        }
       },
       {
         id: 'dexmedetomidine',
@@ -1106,16 +993,14 @@
             ampVol: 2,
             totalContent: '200 mcg / vial',
             defaultMlToDraw: 2,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '0.2 - 1.4 mcg/kg/hr',
         scenarios: {
-          title: 'Procedural & ICU Weaning',
-          body: '<strong>Ventilator Weaning:</strong> Smooth sedation without respiratory depression.'
-        },
-        warnings: 'Watch for bradycardia.'
+          title: 'ICU Ventilator Weaning',
+          body: '<strong>Weaning:</strong> Co-operative arousable sedation without hypoventilation.'
+        }
       },
       {
         id: 'propofol',
@@ -1125,25 +1010,21 @@
         preparations: [
           {
             id: 'prop_1pct_50ml',
-            label: '50 mL Prefilled Syringe / Vial (10 mg/mL = 1%)',
+            label: '50 mL Vial / Prefilled (10 mg/mL = 1%)',
             strengthVal: 10,
             strengthUnit: 'mg/ml',
             ampVol: 50,
             totalContent: '500 mg in 50 mL pure emulsion',
             defaultMlToDraw: 50,
-            recommendedDiluent: 'Undiluted Pure Emulsion',
-            isStandard: true
+            recommendedDiluent: 'Pure Undiluted'
           }
         ],
         range: '0.3 - 3.0 mg/kg/hr (ICU) / 4 - 12 mg/kg/hr (TIVA)',
         scenarios: {
           title: 'TIVA vs ICU Sedation',
-          body: '<strong>TIVA:</strong> 6 - 12 mg/kg/hr. <strong>ICU:</strong> 0.3 - 3.0 mg/kg/hr. Avoid > 4-5 mg/kg/hr > 48h (PRIS risk).'
-        },
-        warnings: 'Propofol Infusion Syndrome (PRIS) risk at high doses.'
+          body: '<strong>TIVA:</strong> 6 - 12 mg/kg/hr. <strong>ICU:</strong> 0.3 - 3 mg/kg/hr. Avoid PRIS (>4-5 mg/kg/hr >48 hrs).'
+        }
       },
-
-      // 3. ANALGESICS
       {
         id: 'fentanyl',
         name: 'Fentanyl',
@@ -1158,16 +1039,14 @@
             ampVol: 2,
             totalContent: '100 mcg / ampoule',
             defaultMlToDraw: 10,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '0.5 - 3.0 mcg/kg/hr',
         scenarios: {
-          title: 'Intraoperative & ICU Analgesia',
+          title: 'Continuous Analgesia',
           body: '<strong>Maintenance:</strong> 0.5 - 3 mcg/kg/hr.'
-        },
-        warnings: 'Context-sensitive half-time increases with prolonged infusions.'
+        }
       },
       {
         id: 'morphine',
@@ -1183,16 +1062,14 @@
             ampVol: 1,
             totalContent: '10 mg / ampoule',
             defaultMlToDraw: 5,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '10 - 40 mcg/kg/hr (1 - 4 mg/hr)',
         scenarios: {
-          title: 'Postoperative Pain',
+          title: 'Postoperative Analgesia',
           body: '<strong>Titration:</strong> 1 - 3 mg/hr continuous.'
-        },
-        warnings: 'Active metabolite accumulates in renal impairment.'
+        }
       },
       {
         id: 'remifentanil',
@@ -1202,22 +1079,20 @@
         preparations: [
           {
             id: 'remi_2mg',
-            label: 'Reconstituted Powder Vial (2 mg in 50 mL = 40 mcg/mL)',
+            label: '2 mg Powder Reconstituted in 50 mL (= 40 mcg/mL)',
             strengthVal: 0.04,
             strengthUnit: 'mg/ml',
             ampVol: 50,
-            totalContent: '2 mg total vial',
+            totalContent: '2 mg / vial',
             defaultMlToDraw: 50,
-            recommendedDiluent: 'Normal Saline or D5W',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline or D5W'
           }
         ],
         range: '0.05 - 0.5 mcg/kg/min',
         scenarios: {
-          title: 'TIVA Maintenance',
-          body: '<strong>TIVA:</strong> 0.1 - 0.3 mcg/kg/min. Rapid offset within 5-10 minutes.'
-        },
-        warnings: 'Prepare alternative analgesia prior to cessation.'
+          title: 'TIVA Infusion',
+          body: '<strong>TIVA:</strong> 0.1 - 0.3 mcg/kg/min. Ultra-rapid offset.'
+        }
       },
       {
         id: 'ketamine',
@@ -1233,19 +1108,15 @@
             ampVol: 10,
             totalContent: '500 mg / vial',
             defaultMlToDraw: 1,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '1 - 3 mcg/kg/min (0.1 - 0.2 mg/kg/hr)',
         scenarios: {
-          title: 'Subanaesthetic Analgesia',
-          body: '<strong>Opioid-sparing:</strong> Low-dose infusion reduces central sensitization.'
-        },
-        warnings: 'NMDA receptor antagonist.'
+          title: 'Opioid Sparing Analgesia',
+          body: '<strong>Sub-anaesthetic:</strong> 1 - 2 mcg/kg/min reduces hyperalgesia.'
+        }
       },
-
-      // 4. MUSCLE RELAXANTS
       {
         id: 'atracurium',
         name: 'Atracurium',
@@ -1260,16 +1131,14 @@
             ampVol: 5,
             totalContent: '50 mg / ampoule',
             defaultMlToDraw: 10,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '5 - 10 mcg/kg/min',
         scenarios: {
           title: 'Renal / Hepatic Failure',
-          body: '<strong>Organ-independent:</strong> Hofmann elimination makes it safe in renal failure.'
-        },
-        warnings: 'Histamine release with boluses.'
+          body: '<strong>Hofmann Elimination:</strong> Safe in organ failure.'
+        }
       },
       {
         id: 'vecuronium',
@@ -1279,22 +1148,20 @@
         preparations: [
           {
             id: 'vec_10mg',
-            label: '10 mg Powder Vial Reconstituted',
+            label: '10 mg Powder Reconstituted (2 mg/mL)',
             strengthVal: 2,
             strengthUnit: 'mg/ml',
             ampVol: 5,
             totalContent: '10 mg / vial',
             defaultMlToDraw: 10,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '0.8 - 1.5 mcg/kg/min',
         scenarios: {
-          title: 'Cardiac Stability',
-          body: '<strong>Cardiac Surgery:</strong> Minimal cardiovascular side effects.'
-        },
-        warnings: 'Monitor TOF twitches.'
+          title: 'Cardiac Surgery',
+          body: '<strong>Hemodynamic Stability:</strong> Minimal tachycardia.'
+        }
       },
       {
         id: 'rocuronium',
@@ -1310,19 +1177,15 @@
             ampVol: 5,
             totalContent: '50 mg / vial',
             defaultMlToDraw: 25,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '5 - 12 mcg/kg/min',
         scenarios: {
           title: 'Continuous Relaxation',
-          body: '<strong>Titration:</strong> Maintain 1-2 twitches on TOF.'
-        },
-        warnings: 'Reversible with Sugammadex.'
+          body: '<strong>TOF Monitoring:</strong> Maintain 1-2 twitches.'
+        }
       },
-
-      // 5. ANTIHYPERTENSIVES
       {
         id: 'nitroglycerin',
         name: 'Nitroglycerin (NTG)',
@@ -1337,16 +1200,14 @@
             ampVol: 5,
             totalContent: '25 mg / ampoule',
             defaultMlToDraw: 10,
-            recommendedDiluent: '5% Dextrose (D5W) or Normal Saline',
-            isStandard: true
+            recommendedDiluent: '5% Dextrose or Normal Saline'
           }
         ],
         range: '5 - 200 mcg/min (Weight-Independent)',
         scenarios: {
           title: 'Angina vs Pulmonary Edema',
-          body: '<strong>Angina:</strong> 5 - 20 mcg/min. <strong>Acute Pulmonary Edema:</strong> Rapid up-titration 50 - 150+ mcg/min.'
-        },
-        warnings: 'Use non-PVC infusion lines.'
+          body: '<strong>Angina:</strong> 5 - 20 mcg/min. <strong>Acute Pulmonary Edema:</strong> 50 - 150+ mcg/min.'
+        }
       },
       {
         id: 'labetalol',
@@ -1362,16 +1223,14 @@
             ampVol: 20,
             totalContent: '100 mg / ampoule',
             defaultMlToDraw: 20,
-            recommendedDiluent: 'Normal Saline or D5W',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline or D5W'
           }
         ],
         range: '10 - 120 mg/hr',
         scenarios: {
           title: 'Hypertensive Urgency',
-          body: '<strong>Preeclampsia:</strong> Target BP < 140/90 without placental hypoperfusion.'
-        },
-        warnings: 'Combined alpha & beta blocker.'
+          body: '<strong>Preeclampsia:</strong> Target BP < 140/90.'
+        }
       },
       {
         id: 'sodium_nitroprusside',
@@ -1381,22 +1240,20 @@
         preparations: [
           {
             id: 'snp_50mg',
-            label: '50 mg Powder Vial Reconstituted in 50 mL',
+            label: '50 mg Powder in 50 mL (= 1 mg/mL)',
             strengthVal: 1,
             strengthUnit: 'mg/ml',
             ampVol: 50,
             totalContent: '50 mg / vial',
             defaultMlToDraw: 50,
-            recommendedDiluent: '5% Dextrose (D5W) Only',
-            isStandard: true
+            recommendedDiluent: '5% Dextrose (D5W) Only'
           }
         ],
         range: '0.3 - 5.0 mcg/kg/min',
         scenarios: {
-          title: 'Instantaneous Afterload Reduction',
-          body: '<strong>Aortic Surgery:</strong> Potent balanced arterial and venodilator.'
-        },
-        warnings: 'Light-sensitive. Cyanide toxicity risk if prolonged.'
+          title: 'Afterload Reduction',
+          body: '<strong>Aortic Surgery:</strong> Rapid arterial and venodilation.'
+        }
       },
       {
         id: 'hydralazine',
@@ -1412,32 +1269,27 @@
             ampVol: 1,
             totalContent: '20 mg / ampoule',
             defaultMlToDraw: 1,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: '25 - 80 mcg/min (1.5 - 5 mg/hr)',
         scenarios: {
           title: 'Pregnancy Hypertension',
-          body: '<strong>Direct Vasodilator:</strong> Delayed onset of action.'
-        },
-        warnings: 'Avoid rapid repeated doses.'
+          body: '<strong>Direct Vasodilator:</strong> Watch for delayed hypotension.'
+        }
       }
     ];
 
-    /* ==========================================================================
-       2. STATE MANAGEMENT
-       ========================================================================== */
-    const STORAGE_KEY_STATE = 'anaesth_stepwise_state_v2';
-    const STORAGE_KEY_FORMULARY = 'anaesth_stepwise_drugs_v2';
-    const STORAGE_KEY_DOCTOR = 'anaesth_stepwise_doctor_v2';
+    const STORAGE_KEY_FORMULARY = 'anaesth_stepwise_drugs_v3';
+    const STORAGE_KEY_DOCTOR = 'anaesth_stepwise_doctor_v3';
 
     let currentStep = 1;
     let selectedCategoryId = 'all';
 
+    // NO DRUG PRE-SELECTED BY DEFAULT
     let appState = {
-      selectedDrugId: 'noradrenaline',
-      selectedPrepId: 'norad_std_2ml',
+      selectedDrugId: null,
+      selectedPrepId: null,
       weight: 70,
       age: '',
       sex: '',
@@ -1449,7 +1301,7 @@
       pumpRate: 5.0,
       concMgPerMl: 0.08,
       concMcgPerMl: 80.0,
-      selectedMetric: 'mcg/kg/min' // 'mcg/kg/min' | 'mcg/min' | 'mg/hr'
+      selectedMetric: 'mcg/kg/min'
     };
 
     let doctorProfile = {
@@ -1465,9 +1317,8 @@
       loadStorageData();
       renderDoctorData();
       renderStep1Drugs();
-      applyStateToUI();
-      recalculateForwardMath();
       updateStepBreadcrumbs();
+      updateActiveStrip();
       renderSettingsFormularyTable();
     });
 
@@ -1483,31 +1334,21 @@
         const savedDoc = localStorage.getItem(STORAGE_KEY_DOCTOR);
         if (savedDoc) doctorProfile = JSON.parse(savedDoc);
       } catch (e) {}
-
-      try {
-        const savedState = localStorage.getItem(STORAGE_KEY_STATE);
-        if (savedState) {
-          appState = { ...appState, ...JSON.parse(savedState) };
-        }
-      } catch (e) {}
     }
 
     function saveAppState() {
-      localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(appState));
       updateActiveStrip();
     }
 
-    /* ==========================================================================
-       3. NAVIGATION
-       ========================================================================== */
+    /* STEP NAVIGATION */
     function goToStep(stepNumber) {
-      if (stepNumber > 2 && (!appState.weight || appState.weight <= 0)) {
-        showToast("Please enter a valid patient weight first");
-        stepNumber = 2;
-      }
-      if (!appState.selectedDrugId) {
-        showToast("Please select a drug first");
+      if (!appState.selectedDrugId && stepNumber > 1) {
+        showToast("Please choose a drug first");
         stepNumber = 1;
+      }
+      if (stepNumber > 2 && (!appState.weight || appState.weight <= 0)) {
+        showToast("Please enter a valid weight");
+        stepNumber = 2;
       }
 
       currentStep = stepNumber;
@@ -1531,7 +1372,6 @@
     }
 
     function updateStepBreadcrumbs() {
-      document.getElementById('current-step-display').textContent = currentStep;
       for (let i = 1; i <= 5; i++) {
         const crumb = document.getElementById(`step-crumb-${i}`);
         if (!crumb) continue;
@@ -1552,23 +1392,14 @@
 
     function updateActiveStrip() {
       const drug = getCurrentDrug();
-      document.getElementById('strip-drug-name').textContent = drug ? drug.name : 'None selected';
+      document.getElementById('strip-drug-name').textContent = drug ? drug.name : 'None Selected';
       document.getElementById('strip-weight').textContent = appState.weight ? `${appState.weight} kg` : '-- kg';
       document.getElementById('strip-syringe').textContent = `${appState.syringeVolume} mL`;
-
-      if (appState.concMcgPerMl) {
-        if (drug && drug.unit === 'units/min') {
-          document.getElementById('strip-conc').textContent = `${(appState.concMgPerMl).toFixed(3)} units/mL`;
-        } else {
-          document.getElementById('strip-conc').textContent = `${appState.concMcgPerMl.toFixed(1)} mcg/mL`;
-        }
-      } else {
-        document.getElementById('strip-conc').textContent = '--';
-      }
     }
 
     function getCurrentDrug() {
-      return drugsFormulary.find(d => d.id === appState.selectedDrugId) || drugsFormulary[0];
+      if (!appState.selectedDrugId) return null;
+      return drugsFormulary.find(d => d.id === appState.selectedDrugId) || null;
     }
 
     function getCurrentPrep() {
@@ -1582,19 +1413,17 @@
       return prep;
     }
 
-    /* ==========================================================================
-       4. STEP 1: CHOOSE DRUG (GENERIC NAME ONLY - CLEAN UI)
-       ========================================================================== */
+    /* STEP 1: CHOOSE DRUG (CLEAN, NO DEFAULT SELECTED) */
     function filterCategory(catKey) {
       selectedCategoryId = catKey;
       document.querySelectorAll('.cat-pill').forEach(btn => {
-        btn.classList.remove('bg-slate-800', 'text-white', 'active-pill');
-        btn.classList.add('bg-slate-100', 'text-slate-700');
+        btn.classList.remove('bg-teal-600', 'text-white', 'active-pill');
+        btn.classList.add('bg-slate-800', 'text-slate-300');
       });
       const targetPill = document.getElementById(`cat-pill-${catKey}`);
       if (targetPill) {
-        targetPill.classList.add('bg-slate-800', 'text-white', 'active-pill');
-        targetPill.classList.remove('bg-slate-100', 'text-slate-700');
+        targetPill.classList.add('bg-teal-600', 'text-white', 'active-pill');
+        targetPill.classList.remove('bg-slate-800', 'text-slate-300');
       }
       renderStep1Drugs();
     }
@@ -1618,25 +1447,22 @@
         );
       }
 
-      const activeDrug = getCurrentDrug();
-
       filtered.forEach(drug => {
         const isSelected = appState.selectedDrugId === drug.id;
         const card = document.createElement('div');
-        // Clean, uncluttered card with generic name only
-        card.className = `p-4 rounded-xl border cursor-pointer transition select-none flex items-center justify-between ${
+        card.className = `p-3.5 sm:p-4 rounded-xl border cursor-pointer transition select-none flex items-center justify-between active:scale-98 ${
           isSelected 
-            ? 'border-teal-500 bg-teal-50/90 shadow-sm ring-2 ring-teal-400' 
-            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+            ? 'border-teal-400 bg-teal-950/70 shadow-sm ring-1 ring-teal-400' 
+            : 'border-slate-800 bg-slate-850 bg-slate-800 hover:border-slate-700 hover:bg-slate-750'
         }`;
         card.onclick = () => selectSingleDrug(drug.id);
 
         card.innerHTML = `
-          <div class="flex items-center gap-3">
-            <span class="font-bold text-sm ${isSelected ? 'text-teal-950 font-extrabold' : 'text-slate-800'}">${drug.name}</span>
+          <div class="flex items-center gap-2.5">
+            <span class="font-extrabold text-sm sm:text-base ${isSelected ? 'text-teal-300' : 'text-slate-100'}">${drug.name}</span>
           </div>
           <div class="w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-            isSelected ? 'bg-teal-600 text-white font-bold' : 'border border-slate-300 text-transparent'
+            isSelected ? 'bg-teal-500 text-slate-950 font-bold' : 'border border-slate-700 text-transparent'
           }">
             <i class="fa-solid fa-check"></i>
           </div>
@@ -1645,6 +1471,7 @@
       });
 
       const banner = document.getElementById('step1-selection-banner');
+      const activeDrug = getCurrentDrug();
       if (activeDrug) {
         banner.classList.remove('hidden');
         document.getElementById('step1-selected-name').textContent = activeDrug.name;
@@ -1661,7 +1488,6 @@
         appState.drugMl = drug.preparations[0].defaultMlToDraw || 4;
         appState.diluentMl = Math.max(0, appState.syringeVolume - appState.drugMl);
         
-        // Auto-set the metric selector to match drug standard
         if (drug.unit === 'mcg/min') {
           appState.selectedMetric = 'mcg/min';
         } else if (drug.unit === 'mg/hr') {
@@ -1675,9 +1501,7 @@
       recalculateForwardMath();
     }
 
-    /* ==========================================================================
-       5. STEP 2: WEIGHT
-       ========================================================================== */
+    /* STEP 2: PATIENT WEIGHT */
     function handleWeightInput(val) {
       const parsed = parseFloat(val);
       if (!isNaN(parsed) && parsed > 0 && parsed <= 350) {
@@ -1707,7 +1531,7 @@
       if (isNaN(val) || val <= 0 || val > 350) {
         document.getElementById('step2-weight-error').classList.remove('hidden');
         document.getElementById('input-weight').focus();
-        showToast("Please enter a valid patient weight");
+        showToast("Please enter a valid weight");
         return;
       }
       appState.weight = val;
@@ -1717,9 +1541,7 @@
       goToStep(3);
     }
 
-    /* ==========================================================================
-       6. STEP 3: COMMERCIAL PREPARATION
-       ========================================================================== */
+    /* STEP 3: COMMERCIAL PREP */
     function renderStep3Preparations() {
       const drug = getCurrentDrug();
       if (!drug) return;
@@ -1733,28 +1555,28 @@
         if (isSelected) appState.selectedPrepId = prep.id;
 
         const card = document.createElement('div');
-        card.className = `p-4 rounded-xl border cursor-pointer transition select-none flex items-center justify-between ${
+        card.className = `p-3.5 sm:p-4 rounded-xl border cursor-pointer transition select-none flex items-center justify-between active:scale-98 ${
           isSelected 
-            ? 'border-teal-500 bg-teal-50/80 shadow-sm ring-2 ring-teal-400' 
-            : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+            ? 'border-teal-400 bg-teal-950/70 ring-1 ring-teal-400' 
+            : 'border-slate-800 bg-slate-800 hover:border-slate-700'
         }`;
         card.onclick = () => selectPrep(prep.id);
 
         card.innerHTML = `
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-teal-700 flex items-center justify-center text-lg flex-shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 text-teal-400 flex items-center justify-center text-lg flex-shrink-0">
               <i class="fa-solid fa-vial"></i>
             </div>
             <div>
-              <h4 class="font-bold text-sm text-slate-900">${prep.label}</h4>
-              <div class="text-xs text-slate-500 mt-0.5 font-mono">
+              <h4 class="font-bold text-sm text-white">${prep.label}</h4>
+              <div class="text-xs text-slate-400 mt-0.5 font-mono">
                 ${prep.strengthVal} ${prep.strengthUnit} (${prep.totalContent})
               </div>
             </div>
           </div>
 
           <div class="w-5 h-5 rounded-full flex items-center justify-center text-xs ${
-            isSelected ? 'bg-teal-600 text-white font-bold' : 'border border-slate-300 text-transparent'
+            isSelected ? 'bg-teal-500 text-slate-950 font-bold' : 'border border-slate-700 text-transparent'
           }">
             <i class="fa-solid fa-check"></i>
           </div>
@@ -1775,9 +1597,7 @@
       recalculateForwardMath();
     }
 
-    /* ==========================================================================
-       7. STEP 4: SYRINGE (JUST 3 CLEAN OPTIONS)
-       ========================================================================== */
+    /* STEP 4: SYRINGE */
     function selectSyringe(vol) {
       appState.syringeVolume = vol;
       if (appState.drugMl >= vol) {
@@ -1794,20 +1614,18 @@
         const card = document.getElementById(`syringe-card-${vol}`);
         if (!card) return;
         if (appState.syringeVolume === vol) {
-          card.className = "syringe-card cursor-pointer p-8 rounded-2xl border-2 transition flex flex-col items-center justify-center text-center bg-teal-50/70 border-teal-600 shadow-md ring-2 ring-teal-400";
+          card.className = "syringe-card cursor-pointer p-6 rounded-2xl border-2 transition flex flex-col items-center justify-center text-center bg-teal-950/60 border-teal-400 text-white shadow active:scale-98";
         } else {
-          card.className = "syringe-card cursor-pointer p-8 rounded-2xl border border-slate-300 hover:border-slate-400 transition flex flex-col items-center justify-center text-center bg-white";
+          card.className = "syringe-card cursor-pointer p-6 rounded-2xl border border-slate-700 bg-slate-800 hover:border-slate-600 transition flex flex-col items-center justify-center text-center text-white active:scale-98";
         }
       });
     }
 
-    /* ==========================================================================
-       8. STEP 5: COMBINED CALCULATION & TITRATION
-       ========================================================================== */
+    /* STEP 5: CALCULATION & TITRATION */
     function setupStep5Combined() {
       const drug = getCurrentDrug();
       const prep = getCurrentPrep();
-      if (!prep) return;
+      if (!prep || !drug) return;
 
       document.getElementById('forward-drug-stock-strength').textContent = `${prep.strengthVal} ${prep.strengthUnit}`;
       document.getElementById('input-drug-ml').value = appState.drugMl;
@@ -1817,12 +1635,11 @@
       document.getElementById('live-pump-speed').value = appState.pumpRate.toFixed(1);
       document.getElementById('slider-live-rate').value = Math.min(appState.pumpRate, 30);
 
-      // Scenarios on same page
       document.getElementById('step5-ref-range').textContent = `Ref: ${drug.range || 'Standard titrations'}`;
       const sc = drug.scenarios || {};
       document.getElementById('step5-scenario-box').innerHTML = `
-        <strong>${sc.title || 'Clinical Scenarios'}:</strong><br>
-        ${sc.body || 'Titrate continuously based on arterial line pressure.'}
+        <strong class="text-white">${sc.title || 'Clinical Recommendations'}:</strong><br>
+        ${sc.body || 'Titrate continuously based on invasive arterial pressure.'}
       `;
 
       recalculateForwardMath();
@@ -1838,13 +1655,13 @@
       const contRev = document.getElementById('container-calc-reverse');
 
       if (mode === 'forward') {
-        btnFwd.className = "px-3 py-1.5 rounded-lg bg-teal-600 text-white shadow-sm transition";
-        btnRev.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+        btnFwd.className = "flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-teal-600 text-white font-bold transition";
+        btnRev.className = "flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-400 hover:text-white transition";
         contFwd.classList.remove('hidden');
         contRev.classList.add('hidden');
       } else {
-        btnRev.className = "px-3 py-1.5 rounded-lg bg-teal-600 text-white shadow-sm transition";
-        btnFwd.className = "px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition";
+        btnRev.className = "flex-1 sm:flex-initial px-3.5 py-2 rounded-lg bg-teal-600 text-white font-bold transition";
+        btnFwd.className = "flex-1 sm:flex-initial px-3.5 py-2 rounded-lg text-slate-400 hover:text-white transition";
         contRev.classList.remove('hidden');
         contFwd.classList.add('hidden');
         initReverseModeInputs();
@@ -1879,7 +1696,7 @@
       saveAppState();
       recalculateForwardMath();
       recalculateLivePumpDoses();
-      showToast(`Topped up diluent to reach ${appState.syringeVolume} mL`);
+      showToast(`Topped up to ${appState.syringeVolume} mL`);
     }
 
     function recalculateForwardMath() {
@@ -1913,7 +1730,6 @@
       appState.concMgPerMl = concMgPerMl;
       appState.concMcgPerMl = concMcgPerMl;
 
-      // Concentration readout (1 mL contains ___ mg / ___ mcg)
       const concBox = document.getElementById('display-conc-mg-mcg');
       if (concBox) {
         if (drug.unit === 'units/min') {
@@ -1923,7 +1739,6 @@
         }
       }
 
-      // 1 mL/hr callout
       const dose1MlHrBox = document.getElementById('display-1ml-hr-dose');
       const dose1MlHrMin = document.getElementById('display-1ml-hr-total-min');
 
@@ -1937,7 +1752,6 @@
       updateActiveStrip();
     }
 
-    // 3-WAY METRIC TOGGLER (ONLY SHOW SELECTED METRIC)
     function selectDisplayMetric(metric) {
       appState.selectedMetric = metric;
       saveAppState();
@@ -1951,9 +1765,9 @@
         const btn = document.getElementById(`metric-btn-${m.replace(/\//g, '-')}`);
         if (!btn) return;
         if (appState.selectedMetric === m) {
-          btn.className = "px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition bg-teal-600 text-white shadow";
+          btn.className = "flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold transition bg-teal-500 text-slate-950 font-black shadow";
         } else {
-          btn.className = "px-3 py-1.5 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white transition";
+          btn.className = "flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-400 hover:text-white transition";
         }
       });
     }
@@ -2012,7 +1826,7 @@
       }
     }
 
-    // Reverse Target Engine
+    /* REVERSE CALCULATOR */
     let reverseCalculatedMlDrug = 4;
     let reverseCalculatedMlDiluent = 46;
 
@@ -2095,9 +1909,7 @@
       return val.toFixed(1);
     }
 
-    /* ==========================================================================
-       9. SETTINGS & DOCTOR PROFILE
-       ========================================================================== */
+    /* DOCTOR & FORMULARY */
     function openModal(id) {
       document.getElementById(id).classList.remove('hidden');
     }
@@ -2109,17 +1921,17 @@
     function switchSettingsTab(tabId) {
       document.querySelectorAll('.settings-subcontent').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('[id^="btn-stab-"]').forEach(btn => {
-        btn.classList.remove('border-teal-600', 'text-teal-700');
-        btn.classList.add('border-transparent', 'text-slate-500');
+        btn.classList.remove('border-teal-500', 'text-teal-300');
+        btn.classList.add('border-transparent', 'text-slate-400');
       });
 
       document.getElementById(tabId).classList.remove('hidden');
       if (tabId === 'settings-tab-profile') {
-        document.getElementById('btn-stab-profile').classList.add('border-teal-600', 'text-teal-700');
+        document.getElementById('btn-stab-profile').classList.add('border-teal-500', 'text-teal-300');
       } else if (tabId === 'settings-tab-drugs') {
-        document.getElementById('btn-stab-drugs').classList.add('border-teal-600', 'text-teal-700');
+        document.getElementById('btn-stab-drugs').classList.add('border-teal-500', 'text-teal-300');
       } else if (tabId === 'settings-tab-db') {
-        document.getElementById('btn-stab-db').classList.add('border-teal-600', 'text-teal-700');
+        document.getElementById('btn-stab-db').classList.add('border-teal-500', 'text-teal-300');
         renderSettingsFormularyTable();
       }
     }
@@ -2133,13 +1945,12 @@
       };
       localStorage.setItem(STORAGE_KEY_DOCTOR, JSON.stringify(doctorProfile));
       renderDoctorData();
-      showToast("Doctor profile updated");
+      showToast("Doctor profile saved");
       closeModal('settings-modal');
     }
 
     function renderDoctorData() {
       document.getElementById('hdr-doc-name').textContent = doctorProfile.name;
-      document.getElementById('hdr-doc-meta').textContent = doctorProfile.registration ? `Reg: ${doctorProfile.registration}` : doctorProfile.designation;
       document.getElementById('set-doc-name').value = doctorProfile.name;
       document.getElementById('set-doc-reg').value = doctorProfile.registration;
       document.getElementById('set-doc-designation').value = doctorProfile.designation;
@@ -2155,9 +1966,8 @@
       const strengthUnit = document.getElementById('form-drug-strength-unit').value;
       const ampVol = parseFloat(document.getElementById('form-drug-amp-vol').value) || 2;
       const packLabel = document.getElementById('form-drug-pack-label').value.trim() || `${ampVol} mL ampoule (${strengthVal} ${strengthUnit})`;
-      const range = document.getElementById('form-drug-range').value.trim() || 'Titrate to response';
+      const range = document.getElementById('form-drug-range').value.trim() || 'Titrate to clinical response';
       const scenarios = document.getElementById('form-drug-scenarios').value.trim();
-      const warnings = document.getElementById('form-drug-warnings').value.trim();
 
       const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
 
@@ -2175,16 +1985,14 @@
             ampVol: ampVol,
             totalContent: `${(strengthVal * ampVol).toFixed(1)} ${strengthUnit.split('/')[0]} / ampoule`,
             defaultMlToDraw: ampVol,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)',
-            isStandard: true
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
           }
         ],
         range: range,
         scenarios: {
           title: 'Clinical Recommendations',
-          body: scenarios || 'Titrate continuously based on invasive blood pressure.'
-        },
-        warnings: warnings || 'Continuous anaesthetic monitoring mandatory.'
+          body: scenarios || 'Titrate continuously based on invasive arterial pressure.'
+        }
       };
 
       drugsFormulary.unshift(newDrug);
@@ -2203,26 +2011,19 @@
       goToStep(1);
     }
 
-    function resetDrugForm() {
-      document.getElementById('custom-drug-form').reset();
-    }
-
     function renderSettingsFormularyTable() {
       const tbody = document.getElementById('settings-formulary-table');
       tbody.innerHTML = '';
       document.getElementById('set-formulary-count').textContent = drugsFormulary.length;
 
       drugsFormulary.forEach(drug => {
-        const prep = drug.preparations[0] || {};
         const tr = document.createElement('tr');
-        tr.className = "hover:bg-slate-50 transition";
+        tr.className = "hover:bg-slate-800 transition";
         tr.innerHTML = `
-          <td class="p-3 font-bold text-slate-900">${drug.name}</td>
-          <td class="p-3 uppercase text-[10px] font-semibold text-slate-500">${drug.category}</td>
-          <td class="p-3 text-slate-600">${prep.label || '--'}</td>
-          <td class="p-3 font-mono text-teal-700">${drug.unit}</td>
-          <td class="p-3 text-right">
-            <button onclick="deleteDrugFromFormulary('${drug.id}')" class="text-rose-500 hover:text-rose-700 p-1">
+          <td class="p-2.5 font-bold text-white">${drug.name}</td>
+          <td class="p-2.5 font-mono text-teal-300">${drug.unit}</td>
+          <td class="p-2.5 text-right">
+            <button onclick="deleteDrugFromFormulary('${drug.id}')" class="text-rose-400 hover:text-rose-300 p-1">
               <i class="fa-solid fa-trash"></i>
             </button>
           </td>
@@ -2233,14 +2034,14 @@
 
     function deleteDrugFromFormulary(drugId) {
       if (drugsFormulary.length <= 1) {
-        showToast("Cannot delete the only remaining drug");
+        showToast("Cannot delete last remaining drug");
         return;
       }
       drugsFormulary = drugsFormulary.filter(d => d.id !== drugId);
       localStorage.setItem(STORAGE_KEY_FORMULARY, JSON.stringify(drugsFormulary));
       if (appState.selectedDrugId === drugId) {
-        appState.selectedDrugId = drugsFormulary[0].id;
-        appState.selectedPrepId = drugsFormulary[0].preparations[0].id;
+        appState.selectedDrugId = null;
+        appState.selectedPrepId = null;
       }
       renderSettingsFormularyTable();
       renderStep1Drugs();
@@ -2250,29 +2051,19 @@
     function restoreDefaultFormulary() {
       drugsFormulary = [...DEFAULT_DRUGS];
       localStorage.setItem(STORAGE_KEY_FORMULARY, JSON.stringify(drugsFormulary));
-      appState.selectedDrugId = 'noradrenaline';
-      appState.selectedPrepId = 'norad_std_2ml';
+      appState.selectedDrugId = null;
+      appState.selectedPrepId = null;
       saveAppState();
       renderSettingsFormularyTable();
       renderStep1Drugs();
-      showToast("Restored standard clinical formulary");
+      showToast("Restored default formulary");
     }
 
-    function applyStateToUI() {
-      document.getElementById('input-weight').value = appState.weight || '';
-      document.getElementById('input-age').value = appState.age || '';
-      document.getElementById('input-sex').value = appState.sex || '';
-      document.getElementById('input-drug-ml').value = appState.drugMl;
-      document.getElementById('input-diluent-ml').value = appState.diluentMl;
-    }
-
-    /* ==========================================================================
-       10. RESET CALCULATOR
-       ========================================================================== */
+    /* RESET CALCULATOR (NO DRUG PRE-SELECTED) */
     function resetCalculator(showToastMsg = true) {
       appState = {
-        selectedDrugId: 'noradrenaline',
-        selectedPrepId: 'norad_std_2ml',
+        selectedDrugId: null,
+        selectedPrepId: null,
         weight: 70,
         age: '',
         sex: '',
@@ -2286,16 +2077,16 @@
         concMcgPerMl: 80.0,
         selectedMetric: 'mcg/kg/min'
       };
-      saveAppState();
-      applyStateToUI();
-      recalculateForwardMath();
+      document.getElementById('input-weight').value = 70;
+      document.getElementById('drug-search-input').value = '';
+      selectedCategoryId = 'all';
+      filterCategory('all');
+      renderStep1Drugs();
       goToStep(1);
       if (showToastMsg) showToast("Reset to initial state");
     }
 
-    /* ==========================================================================
-       11. TOAST
-       ========================================================================== */
+    /* TOAST */
     let toastTimeout = null;
     function showToast(text) {
       const toast = document.getElementById('clinical-toast');
@@ -2309,7 +2100,7 @@
       toastTimeout = setTimeout(() => {
         toast.classList.remove('translate-y-0', 'opacity-100');
         toast.classList.add('translate-y-20', 'opacity-0');
-      }, 3000);
+      }, 2500);
     }
   </script>
 </body>
