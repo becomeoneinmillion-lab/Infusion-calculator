@@ -1140,6 +1140,17 @@
         unit: 'mg/kg/hr',
         preparations: [
           {
+            id: 'prop_10ml_1pct',
+            label: '10 mL Vial 1% (100 mg/10 mL = 10 mg/mL)',
+            sublabel: 'Common Indian Prep (Propovan / Neorof / Zyfol 10 mL)',
+            strengthVal: 10,
+            strengthUnit: 'mg/ml',
+            ampVol: 10,
+            totalContent: '100 mg / 10 mL emulsion',
+            defaultMlToDraw: 10,
+            recommendedDiluent: 'Pure Undiluted'
+          },
+          {
             id: 'prop_20ml_1pct',
             label: '20 mL Vial / Ampoule 1% (200 mg/20 mL = 10 mg/mL)',
             sublabel: 'Standard India (Zyfol / Neorof / Propovan 1%)',
@@ -1208,6 +1219,28 @@
         unit: 'mcg/kg/hr',
         preparations: [
           {
+            id: 'dex_50mcg_05ml',
+            label: '0.5 mL Ampoule (50 mcg/0.5 mL = 100 mcg/mL)',
+            sublabel: 'Common Indian Prep (Neon Dextomid / Samarth 0.5 mL)',
+            strengthVal: 100,
+            strengthUnit: 'mcg/ml',
+            ampVol: 0.5,
+            totalContent: '50 mcg / 0.5 mL',
+            defaultMlToDraw: 0.5,
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
+          },
+          {
+            id: 'dex_100mcg_1ml',
+            label: '1 mL Ampoule (100 mcg/1 mL = 100 mcg/mL)',
+            sublabel: 'Single dose standard ampoule (100 mcg)',
+            strengthVal: 100,
+            strengthUnit: 'mcg/ml',
+            ampVol: 1,
+            totalContent: '100 mcg / 1 mL',
+            defaultMlToDraw: 1,
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
+          },
+          {
             id: 'dex_200mcg_2ml',
             label: '2 mL Ampoule / Vial (200 mcg/2 mL = 100 mcg/mL)',
             sublabel: 'Standard India (Dextomid / Precedex) & Global',
@@ -1217,28 +1250,6 @@
             totalContent: '200 mcg / 2 mL',
             defaultMlToDraw: 2,
             recommendedDiluent: 'Normal Saline (0.9% NaCl)'
-          },
-          {
-            id: 'dex_100mcg_1ml',
-            label: '1 mL Ampoule (100 mcg/1 mL)',
-            sublabel: 'Single dose ampoule (100 mcg)',
-            strengthVal: 100,
-            strengthUnit: 'mcg/ml',
-            ampVol: 1,
-            totalContent: '100 mcg / 1 mL',
-            defaultMlToDraw: 1,
-            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
-          },
-          {
-            id: 'dex_50mcg_05ml',
-            label: '0.5 mL Ampoule (50 mcg/0.5 mL = 100 mcg/mL)',
-            sublabel: 'Micro ampoule (Neon / Samarth)',
-            strengthVal: 100,
-            strengthUnit: 'mcg/ml',
-            ampVol: 0.5,
-            totalContent: '50 mcg / 0.5 mL',
-            defaultMlToDraw: 1,
-            recommendedDiluent: 'Normal Saline'
           },
           {
             id: 'dex_premix_50ml',
@@ -1267,6 +1278,52 @@
         scenarios: {
           title: 'ICU Sedation & Non-Intubated Procedures',
           body: '<strong>Procedural / ICU Weaning:</strong> 0.2 - 0.7 mcg/kg/hr (no respiratory depression; patient easily arousable). Watch for bradycardia.'
+        }
+      },
+      {
+        id: 'thiopentone',
+        name: 'Thiopentone (Thiopental Sodium)',
+        category: 'sedatives',
+        unit: 'mg/kg/hr',
+        preparations: [
+          {
+            id: 'thio_500mg_20ml',
+            label: '500 mg Powder Reconstituted in 20 mL (25 mg/mL = 2.5%)',
+            sublabel: 'Standard Indian Vial (Thiosol / Intraval / Neon 500 mg)',
+            strengthVal: 25,
+            strengthUnit: 'mg/ml',
+            ampVol: 20,
+            totalContent: '500 mg / 20 mL (2.5%)',
+            defaultMlToDraw: 20,
+            recommendedDiluent: 'Normal Saline or Sterile Water'
+          },
+          {
+            id: 'thio_500mg_50ml',
+            label: '500 mg Powder Reconstituted in 50 mL (10 mg/mL = 1.0%)',
+            sublabel: 'Dilute Syringe Infusion Prep (10 mg/mL)',
+            strengthVal: 10,
+            strengthUnit: 'mg/ml',
+            ampVol: 50,
+            totalContent: '500 mg / 50 mL (1%)',
+            defaultMlToDraw: 50,
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
+          },
+          {
+            id: 'thio_1000mg_40ml',
+            label: '1 g (1000 mg) Powder Reconstituted in 40 mL (25 mg/mL = 2.5%)',
+            sublabel: '1 Gram Powder Vial formulation',
+            strengthVal: 25,
+            strengthUnit: 'mg/ml',
+            ampVol: 40,
+            totalContent: '1000 mg / 40 mL (2.5%)',
+            defaultMlToDraw: 20,
+            recommendedDiluent: 'Normal Saline (0.9% NaCl)'
+          }
+        ],
+        range: '1 - 5 mg/kg/hr (Infusion) / 3 - 5 mg/kg IV (Bolus)',
+        scenarios: {
+          title: 'Refractory Status Epilepticus & Elevated ICP',
+          body: '<strong>Refractory Status Epilepticus / Burst Suppression:</strong> 1 - 5 mg/kg/hr IV infusion titrated to continuous EEG burst suppression.<br><strong>Severe Head Injury / Elevated ICP:</strong> Potent cerebral metabolic rate (CMRO2) & ICP reducer.<br><strong>Cautions:</strong> Marked myocardial depression, venodilation, tissue necrosis if extravasated, prolonged elimination half-life with zero-order kinetics after saturation.'
         }
       },
       {
@@ -1790,8 +1847,8 @@
       }
     ];
 
-    const STORAGE_KEY_FORMULARY = 'infusion_calc_formulary_v4';
-    const STORAGE_KEY_DOCTOR = 'infusion_calc_doctor_v4';
+    const STORAGE_KEY_FORMULARY = 'infusion_calc_formulary_v5';
+    const STORAGE_KEY_DOCTOR = 'infusion_calc_doctor_v5';
 
     let currentStep = 1;
     let selectedCategoryId = 'all';
@@ -2259,6 +2316,10 @@
           const deliveredMin = (totalUnits / totalSyringeVol) / 60;
           dose1MlHrBox.textContent = `${deliveredMin.toFixed(4)} units/min`;
           if (dose1MlHrMin) dose1MlHrMin.textContent = `Hourly Total: ${(totalUnits / totalSyringeVol).toFixed(2)} units/hr`;
+        } else if (drug.unit === 'mg/kg/hr') {
+          const deliveredMgKgHr = (concMgPerMl * 1) / patientWeight;
+          dose1MlHrBox.textContent = `${formatNum(deliveredMgKgHr)} mg/kg/hr`;
+          if (dose1MlHrMin) dose1MlHrMin.textContent = `Hourly: ${concMgPerMl.toFixed(3)} mg/hr • Total: ${(concMcgPerMl / 60).toFixed(2)} mcg/min`;
         } else {
           const delivered1MlHr = (concMcgPerMl / 60) / patientWeight;
           const deliveredMin = concMcgPerMl / 60;
@@ -2336,6 +2397,10 @@
           const dose = rateMlHr * concMgPerMl;
           valBox.textContent = dose.toFixed(2);
           unitBox.textContent = 'Units / hr';
+        } else if (drug.unit === 'mg/kg/hr') {
+          const doseMgKgHr = (rateMlHr * concMgPerMl) / weight;
+          valBox.textContent = formatNum(doseMgKgHr);
+          unitBox.textContent = 'mg / kg / hr';
         } else {
           const dose = rateMlHr * concMgPerMl;
           valBox.textContent = formatNum(dose);
