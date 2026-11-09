@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Anaesthesiologist's Infusion Calculator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .syringe-hash {
+      background-size: 8px 100%;
+      background-image: linear-gradient(to right, #94a3b8 1px, transparent 1px);
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            medblue: {
+              50: '#f0f7ff',
+              100: '#e0effe',
+              500: '#0284c7',
+              600: '#0369a1',
+              700: '#075985',
+              900: '#0c4a6e',
+            },
+            clinical: {
+              bg: '#f8fafc',
+              card: '#ffffff',
+              accent: '#0d9488',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-sky-500 selection:text-white">
+
+  <!-- TOP CLINICAL APP HEADER -->
+  <header class="bg-slate-900 text-white shadow-lg border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-sky-600 to-teal-400 flex items-center justify-center text-white shadow-md shadow-sky-900/30">
+          <i class="fa-solid fa-syringe text-lg"></i>
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-white flex items-center gap-2">
+            Anaesthesia Infusion Calculator
+            <span class="text-xs bg-sky-500/20 text-sky-300 border border-sky-400/30 px-2 py-0.5 rounded font-mono">v2.5 Clinical</span>
+          </h1>
+          <p class="text-xs text-slate-400">Critical Care & Perioperative Drug Titration Engine</p>
+        </div>
+      </div>
+
+      <!-- Doctor Banner / Profile Info -->
+      <div id="header-doctor-badge" class="flex items-center bg-slate-800/90 border border-slate-700/80 rounded-xl px-3.5 py-1.5 shadow-inner">
+        <div class="w-8 h-8 rounded-full bg-teal-500/20 text-teal-400 flex items-center justify-center mr-2.5">
+          <i class="fa-solid fa-user-doctor text-sm"></i>
+        </div>
+        <div class="text-left text-xs leading-tight">
+          <div id="hdr-doc-name" class="font-bold text-slate-200">Dr. Guest Anaesthesiologist</div>
+          <div id="hdr-doc-meta" class="text-slate-400 text-[11px]">Configure in Settings tab</div>
+        </div>
+        <button onclick="switchTab('tab-settings')" class="ml-3 text-slate-400 hover:text-white transition-colors" title="Edit Doctor Profile">
+          <i class="fa-solid fa-pen-to-square text-xs"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN CLINICAL TABS NAVIGATION -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-slate-800/80">
+      <nav class="flex space-x-2 sm:space-x-8 overflow-x-auto py-2" aria-label="Tabs">
+        <button onclick="switchTab('tab-choose')" id="nav-tab-choose" class="tab-btn active flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-semibold transition-all border-b-2 border-sky-400 text-sky-400 bg-sky-950/40">
+          <span class="w-5 h-5 rounded-full bg-sky-500/30 flex items-center justify-center text-xs">1</span>
+          <span>Choose Drugs & Patient</span>
+          <span id="badge-drug-count" class="bg-sky-500 text-slate-950 text-xs px-2 py-0.2 rounded-full font-bold ml-1">0</span>
+        </button>
+
+        <button onclick="switchTab('tab-prep')" id="nav-tab-prep" class="tab-btn flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all border-b-2 border-transparent">
+          <span class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-xs">2</span>
+          <span>Commercial Preparation</span>
+        </button>
+
+        <button onclick="switchTab('tab-calc')" id="nav-tab-calc" class="tab-btn flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all border-b-2 border-transparent">
+          <span class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-xs">3</span>
+          <span>Rate & Micrograms Calculator</span>
+        </button>
+
+        <button onclick="switchTab('tab-settings')" id="nav-tab-settings" class="tab-btn flex items-center gap-2 py-2 px-3.5 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all border-b-2 border-transparent">
+          <span class="w-5 h-5 rounded-full bg-slate-700 flex items-center justify-center text-xs">4</span>
+          <span>Settings & Formulary</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- PATIENT QUICK BANNER (Sticky subheader) -->
+  <section class="bg-sky-900/90 text-white border-b border-sky-800 shadow-sm backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 flex flex-wrap items-center justify-between text-xs gap-3">
+      <div class="flex items-center gap-4 flex-wrap">
+        <span class="flex items-center gap-1.5 text-sky-200 font-semibold uppercase tracking-wider text-[11px]">
+          <i class="fa-solid fa-hospital-user text-sky-300"></i> Active Case:
+        </span>
+        <span class="bg-sky-950/70 border border-sky-700/60 px-2.5 py-1 rounded-md text-sky-100 flex items-center gap-1.5">
+          <span class="text-sky-300 font-medium">Weight:</span>
+          <strong id="banner-weight" class="text-amber-300 font-bold font-mono">-- kg</strong>
+        </span>
+        <span class="bg-sky-950/70 border border-sky-700/60 px-2.5 py-1 rounded-md text-sky-100">
+          Age: <strong id="banner-age" class="text-slate-200">Not set</strong>
+        </span>
+        <span class="bg-sky-950/70 border border-sky-700/60 px-2.5 py-1 rounded-md text-sky-100">
+          Sex: <strong id="banner-sex" class="text-slate-200">Not set</strong>
+        </span>
+        <span class="bg-sky-950/70 border border-sky-700/60 px-2.5 py-1 rounded-md text-sky-100">
+          Syringe: <strong id="banner-syringe" class="text-emerald-300 font-mono font-bold">50 ml</strong>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span id="quick-selection-summary" class="text-sky-200 text-xs truncate max-w-xs sm:max-w-md">No drugs selected yet</span>
+        <button onclick="switchTab('tab-calc')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-3 py-1 rounded-md shadow transition flex items-center gap-1.5 text-xs">
+          <i class="fa-solid fa-calculator"></i> Quick Calc
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN BODY CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ========================================== -->
+    <!-- TAB 1: PATIENT & DRUG SELECTION            -->
+    <!-- ========================================== -->
+    <div id="tab-choose" class="tab-content space-y-6">
+      
+      <!-- Patient Demographics & Syringe Panel -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+          <div>
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-user-tag text-sky-600"></i> Patient Demographics & Delivery Apparatus
+            </h2>
+            <p class="text-xs text-slate-500">Weight is essential for accurate microgram/kg/minute infusions</p>
+          </div>
+          <span class="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-1 rounded-full font-medium flex items-center gap-1">
+            <i class="fa-solid fa-circle-exclamation"></i> Weight Mandatory
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- Weight (Mandatory) -->
+          <div class="relative">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+              Weight (kg) <span class="text-red-500 font-bold text-sm">*</span>
+            </label>
+            <div class="relative rounded-xl shadow-sm">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <i class="fa-solid fa-weight-scale"></i>
+              </div>
+              <input type="number" id="patient-weight" step="0.1" min="1" max="300" placeholder="e.g. 70"
+                class="block w-full rounded-xl border border-slate-300 pl-10 pr-12 py-2.5 text-slate-900 font-bold font-mono focus:border-sky-500 focus:ring-2 focus:ring-sky-200 text-base"
+                oninput="updatePatientData()">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 font-semibold text-xs text-slate-400">
+                kg
+              </div>
+            </div>
+            <p id="weight-error-msg" class="text-xs text-red-500 mt-1 hidden font-medium">Please enter a valid weight (1 - 300 kg)</p>
+          </div>
+
+          <!-- Age (Optional) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Age (Years) <span class="text-slate-400 font-normal lowercase">(optional)</span>
+            </label>
+            <div class="relative rounded-xl shadow-sm">
+              <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <i class="fa-solid fa-calendar-day"></i>
+              </div>
+              <input type="number" id="patient-age" min="0" max="120" placeholder="e.g. 52"
+                class="block w-full rounded-xl border border-slate-300 pl-10 pr-12 py-2.5 text-slate-900 font-medium focus:border-sky-500 focus:ring-2 focus:ring-sky-200 text-sm"
+                oninput="updatePatientData()">
+              <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 font-semibold text-xs text-slate-400">
+                yrs
+              </div>
+            </div>
+          </div>
+
+          <!-- Sex (Optional) -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+              Sex <span class="text-slate-400 font-normal lowercase">(optional)</span>
+            </label>
+            <select id="patient-sex" class="block w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-slate-900 text-sm focus:border-sky-500 focus:ring-2 focus:ring-sky-200 bg-white" onchange="updatePatientData()">
+              <option value="">Select Sex</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Syringe Size Selector -->
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+              Infusion Syringe Volume
+            </label>
+            <div class="grid grid-cols-3 gap-2">
+              <button type="button" onclick="setSyringeSize(50)" id="syringe-btn-50" class="syringe-selector active-syringe py-2 px-2 text-xs font-bold rounded-xl border-2 border-sky-600 bg-sky-50 text-sky-700 transition flex flex-col items-center justify-center">
+                <span class="text-base font-mono">50 ml</span>
+                <span class="text-[10px] text-slate-500 font-normal">Standard</span>
+              </button>
+              <button type="button" onclick="setSyringeSize(20)" id="syringe-btn-20" class="syringe-selector py-2 px-2 text-xs font-bold rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition flex flex-col items-center justify-center">
+                <span class="text-base font-mono">20 ml</span>
+                <span class="text-[10px] text-slate-400 font-normal">Compact</span>
+              </button>
+              <button type="button" onclick="setSyringeSize(10)" id="syringe-btn-10" class="syringe-selector py-2 px-2 text-xs font-bold rounded-xl border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 transition flex flex-col items-center justify-center">
+                <span class="text-base font-mono">10 ml</span>
+                <span class="text-[10px] text-slate-400 font-normal">Paed/Target</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Drug Category Selection (Collapsible Accordions) -->
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-pills text-teal-600"></i> Select Infusion Drugs
+            </h3>
+            <p class="text-xs text-slate-500">Tap category headers to expand/collapse options. Choose single or multiple agents.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="expandAllCategories(true)" class="text-xs text-sky-600 hover:text-sky-800 font-medium px-2 py-1 rounded">Expand All</button>
+            <span class="text-slate-300">|</span>
+            <button onclick="expandAllCategories(false)" class="text-xs text-slate-500 hover:text-slate-700 font-medium px-2 py-1 rounded">Collapse</button>
+          </div>
+        </div>
+
+        <!-- Dynamic Category Accordions Container -->
+        <div id="drug-categories-container" class="space-y-3">
+          <!-- Injected via JavaScript from formulary -->
+        </div>
+      </div>
+
+      <!-- Bottom Floating Action Bar -->
+      <div class="bg-white rounded-2xl p-4 shadow-md border border-slate-200 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center font-bold">
+            <span id="floating-selected-count">0</span>
+          </div>
+          <div>
+            <div class="text-sm font-bold text-slate-800">Drugs Selected For Dilution</div>
+            <div id="floating-selected-names" class="text-xs text-slate-500">Select drugs from categories above</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <button onclick="clearAllSelectedDrugs()" class="text-xs font-semibold text-rose-600 hover:text-rose-700 px-3 py-2 rounded-lg hover:bg-rose-50 transition">
+            Clear Selection
+          </button>
+          <button onclick="proceedToPrep()" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow-md transition flex items-center gap-2">
+            <span>Proceed to Preparation</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: COMMERCIAL PREPARATION & DILUTION   -->
+    <!-- ========================================== -->
+    <div id="tab-prep" class="tab-content hidden space-y-6">
+      
+      <!-- Top banner for Tab 2 -->
+      <div class="bg-gradient-to-r from-sky-900 to-slate-900 text-white rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs font-mono uppercase bg-sky-500/20 text-sky-300 px-2.5 py-1 rounded-md border border-sky-400/20">Step 2 : Formulation</span>
+          <h2 class="text-xl font-bold mt-2">Commercial Preparation & Syringe Dilution</h2>
+          <p class="text-slate-300 text-xs mt-1 max-w-2xl">
+            Inspect commercially supplied ampoules/vials (standard ampoule base content) and build your infusion syringe recipe for the selected <span id="prep-syringe-display" class="font-bold text-amber-300">50 ml</span> syringe.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="switchTab('tab-choose')" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Change Drugs
+          </button>
+          <button onclick="switchTab('tab-calc')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md">
+            Go to Calculator <i class="fa-solid fa-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- No drug selected state -->
+      <div id="prep-empty-state" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center">
+        <div class="w-16 h-16 bg-sky-50 text-sky-500 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+          <i class="fa-solid fa-prescription-bottle-medical"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 mb-1">No Drugs Selected Yet</h3>
+        <p class="text-xs text-slate-500 max-w-md mx-auto mb-5">Please return to Tab 1 to select the sedatives, inotropes, analgesics or relaxants you wish to prepare.</p>
+        <button onclick="switchTab('tab-choose')" class="bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition">
+          Return to Drug Selection
+        </button>
+      </div>
+
+      <!-- Cards Grid of Selected Drugs -->
+      <div id="prep-cards-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Injected via JavaScript -->
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 3: INFUSION RATE & DOSAGE CALCULATOR   -->
+    <!-- ========================================== -->
+    <div id="tab-calc" class="tab-content hidden space-y-6">
+
+      <!-- Drug Switcher Tabs (for selected drugs) -->
+      <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between mb-2 px-2">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+            <i class="fa-solid fa-sliders text-sky-600"></i> Active Drug Under Calculation:
+          </span>
+          <span class="text-xs text-slate-400 font-mono" id="calc-patient-weight-indicator">Patient: 70 kg</span>
+        </div>
+        <div id="calc-drug-pills-container" class="flex flex-wrap gap-2">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- No Drug Selected Warning -->
+      <div id="calc-no-drug-view" class="hidden bg-white rounded-2xl border border-dashed border-slate-300 p-12 text-center">
+        <div class="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-3 text-2xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800 mb-1">No Active Drug Selected</h3>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">Select drugs in Tab 1 and configure dilution in Tab 2 to activate calculations.</p>
+        <button onclick="switchTab('tab-choose')" class="bg-sky-600 text-white text-xs font-bold px-4 py-2 rounded-xl">
+          Select Drugs Now
+        </button>
+      </div>
+
+      <!-- Main Interactive Calculator Workspace -->
+      <div id="calc-active-workspace" class="space-y-6">
+        
+        <!-- Quick Delivered Dose at 1 ml/hr & 1 ml/min Banner -->
+        <div class="bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 text-white rounded-2xl p-6 shadow-md border border-slate-800">
+          <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-300 text-xl">
+                <i class="fa-solid fa-bolt"></i>
+              </div>
+              <div>
+                <h3 id="calc-hero-drug-name" class="text-xl font-bold text-white">Noradrenaline</h3>
+                <div class="text-xs text-sky-300/80 flex items-center gap-2 mt-0.5">
+                  <span id="calc-hero-prep-desc">4 mg in 50 ml (80 mcg/ml)</span>
+                  <span class="w-1 h-1 rounded-full bg-sky-400"></span>
+                  <span id="calc-hero-unit-tag" class="font-mono">mcg/kg/min</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Syringe visual meter -->
+            <div class="bg-slate-800/80 border border-slate-700 px-4 py-2 rounded-xl text-right">
+              <div class="text-[11px] text-slate-400 uppercase tracking-wider">Syringe Concentration</div>
+              <div id="calc-hero-concentration" class="text-lg font-bold font-mono text-emerald-400">80.0 mcg/ml</div>
+              <div id="calc-hero-concentration-mg" class="text-[10px] text-slate-400 font-mono">(0.080 mg/ml)</div>
+            </div>
+          </div>
+
+          <!-- The Rule of 1 ml/hr & 1 ml/min Calculation -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5 pt-4 border-t border-slate-800/80">
+            <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+              <div class="flex items-center justify-between text-xs text-sky-300 font-medium mb-1">
+                <span>Standard Syringe Pump Rate (1 ml/hr)</span>
+                <span class="text-[10px] bg-sky-500/20 px-2 py-0.5 rounded text-sky-300 font-mono">Hourly</span>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-2xl font-bold font-mono text-white" id="stat-1ml-hr">0.019</span>
+                <span class="text-xs font-semibold text-slate-300" id="stat-1ml-hr-unit">mcg/kg/min</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1" id="stat-1ml-hr-desc">
+                Infusing at 1 ml/hr delivers 0.019 mcg/kg/min to a 70 kg patient.
+              </p>
+            </div>
+
+            <div class="bg-slate-800/60 rounded-xl p-4 border border-slate-700/60">
+              <div class="flex items-center justify-between text-xs text-amber-300 font-medium mb-1">
+                <span>Rapid / Flush Benchmark (1 ml/min = 60 ml/hr)</span>
+                <span class="text-[10px] bg-amber-500/20 px-2 py-0.5 rounded text-amber-300 font-mono">Bolus / Fast</span>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span class="text-2xl font-bold font-mono text-amber-300" id="stat-1ml-min">1.143</span>
+                <span class="text-xs font-semibold text-slate-300" id="stat-1ml-min-unit">mcg/kg/min</span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1" id="stat-1ml-min-desc">
+                Infusing at 1 ml/min (60 ml/hr) delivers 1.143 mcg/kg/min.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TWO-WAY DUAL CALCULATOR INTERFACE -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Left Mode: Rate (ml/hr) -> Target Delivered Dose -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-sky-600 bg-sky-50 px-2.5 py-1 rounded-md border border-sky-100">
+                  <i class="fa-solid fa-forward"></i> Forward Mode
+                </span>
+                <span class="text-xs text-slate-400">Pump Rate ➔ Delivered Dose</span>
+              </div>
+              <h4 class="text-base font-bold text-slate-800 mb-1">Syringe Pump Rate Controller</h4>
+              <p class="text-xs text-slate-500 mb-5">Dial pump rate (ml/hr) to see live clinical dosage delivered.</p>
+
+              <!-- Rate Input & Slider -->
+              <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700 uppercase">Infusion Rate:</label>
+                  <div class="flex items-center gap-1">
+                    <input type="number" id="input-pump-rate" step="0.1" min="0" max="100" value="5.0"
+                      class="w-24 text-right rounded-lg border border-slate-300 px-2.5 py-1.5 font-bold font-mono text-lg text-slate-900 focus:ring-2 focus:ring-sky-200"
+                      oninput="onPumpRateInput(this.value)">
+                    <span class="text-xs font-bold text-slate-600 ml-1">ml/hr</span>
+                  </div>
+                </div>
+
+                <input type="range" id="slider-pump-rate" min="0.1" max="30" step="0.1" value="5"
+                  class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-sky-600"
+                  oninput="onPumpRateSlider(this.value)">
+
+                <!-- Quick Presets -->
+                <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+                  <span>Presets:</span>
+                  <div class="flex gap-1.5">
+                    <button onclick="setRatePreset(1)" class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100 font-mono">1 ml/h</button>
+                    <button onclick="setRatePreset(2)" class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100 font-mono">2 ml/h</button>
+                    <button onclick="setRatePreset(5)" class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100 font-mono">5 ml/h</button>
+                    <button onclick="setRatePreset(10)" class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100 font-mono">10 ml/h</button>
+                    <button onclick="setRatePreset(20)" class="px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 hover:bg-slate-100 font-mono">20 ml/h</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Delivered Dose Result Display -->
+              <div class="mt-5 p-5 bg-sky-950 text-white rounded-xl shadow-inner">
+                <div class="text-[11px] uppercase tracking-wider text-sky-300 font-bold mb-1">Delivered Patient Dose:</div>
+                <div class="flex items-baseline gap-2">
+                  <span id="result-delivered-dose" class="text-3xl font-extrabold font-mono text-emerald-300">0.095</span>
+                  <span id="result-delivered-unit" class="text-sm font-semibold text-sky-200">mcg/kg/min</span>
+                </div>
+                <!-- Alternate units readout -->
+                <div id="result-alternate-readout" class="mt-2 pt-2 border-t border-sky-800/80 text-xs text-sky-300 font-mono flex items-center justify-between">
+                  <span>Total Dose: <strong id="result-total-min" class="text-white">6.67 mcg/min</strong></span>
+                  <span>Hourly: <strong id="result-total-hr" class="text-white">400 mcg/hr</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- In-Range Safety Badge -->
+            <div id="dose-safety-indicator" class="mt-4 p-3 rounded-xl text-xs flex items-center gap-2 bg-emerald-50 text-emerald-800 border border-emerald-200">
+              <i class="fa-solid fa-circle-check text-emerald-600"></i>
+              <span id="dose-safety-text">Within standard initial titration range.</span>
+            </div>
+          </div>
+
+          <!-- Right Mode: Target Clinical Dose -> Syringe Pump ml/hr -->
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-xs font-bold uppercase tracking-wider text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md border border-teal-100">
+                  <i class="fa-solid fa-backward"></i> Reverse Mode
+                </span>
+                <span class="text-xs text-slate-400">Target Dose ➔ Pump Rate</span>
+              </div>
+              <h4 class="text-base font-bold text-slate-800 mb-1">Target Titration Calculator</h4>
+              <p class="text-xs text-slate-500 mb-5">Specify desired clinical dose to calculate required infusion pump rate.</p>
+
+              <!-- Target Dose Input -->
+              <div class="space-y-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="flex items-center justify-between">
+                  <label class="text-xs font-bold text-slate-700 uppercase">Target Clinical Dose:</label>
+                  <div class="flex items-center gap-1.5">
+                    <input type="number" id="input-target-dose" step="0.01" min="0" value="0.10"
+                      class="w-28 text-right rounded-lg border border-slate-300 px-2.5 py-1.5 font-bold font-mono text-lg text-slate-900 focus:ring-2 focus:ring-teal-200"
+                      oninput="onTargetDoseInput(this.value)">
+                    <span id="input-target-unit-label" class="text-xs font-bold text-teal-800">mcg/kg/min</span>
+                  </div>
+                </div>
+
+                <!-- Range Quick Jump buttons -->
+                <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
+                  <span>Standard targets:</span>
+                  <div id="target-quick-presets" class="flex flex-wrap gap-1">
+                    <!-- Populated dynamically based on drug -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Required Pump Rate Result Display -->
+              <div class="mt-5 p-5 bg-teal-950 text-white rounded-xl shadow-inner">
+                <div class="text-[11px] uppercase tracking-wider text-teal-300 font-bold mb-1">Set Syringe Pump To:</div>
+                <div class="flex items-baseline gap-2">
+                  <span id="result-required-rate" class="text-3xl font-extrabold font-mono text-amber-300">5.25</span>
+                  <span class="text-base font-semibold text-teal-200">ml / hr</span>
+                </div>
+                <div class="mt-2 pt-2 border-t border-teal-800/80 text-xs text-teal-200 font-mono flex items-center justify-between">
+                  <span>Rate in ml/min: <strong id="result-rate-ml-min" class="text-white">0.088 ml/min</strong></span>
+                  <span>Syringe Run Duration: <strong id="result-syringe-duration" class="text-white">9.5 hrs</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Syringe Volume Remaining Estimator -->
+            <div class="mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs flex items-center justify-between text-slate-600">
+              <span class="flex items-center gap-1.5">
+                <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Full syringe lifespan:
+              </span>
+              <strong id="calc-full-syringe-duration" class="font-mono text-slate-800">10.0 Hours</strong>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CLINICAL DOSAGE REFERENCE & SPECIAL CONDITIONS (e.g., SEPTIC SHOCK) -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100 mb-4">
+            <h4 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <i class="fa-solid fa-book-medical text-sky-600"></i> Clinical Dosage Guidance & Special Protocols
+            </h4>
+            <span class="text-xs bg-slate-100 text-slate-600 font-mono px-2 py-0.5 rounded">Pharmacopeia Reference</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <!-- Standard Range -->
+            <div class="p-4 rounded-xl bg-sky-50/70 border border-sky-100">
+              <div class="text-xs font-bold text-sky-800 uppercase tracking-wider mb-1">Standard Dose Range</div>
+              <div id="ref-dose-range" class="text-lg font-bold font-mono text-sky-900">0.01 - 3.0 mcg/kg/min</div>
+              <p id="ref-dose-desc" class="text-xs text-slate-600 mt-2">Titrate every 2-5 minutes to maintain target MAP > 65 mmHg.</p>
+            </div>
+
+            <!-- Special Protocol: Septic Shock / Targeted Conditions -->
+            <div class="p-4 rounded-xl bg-amber-50/70 border border-amber-200">
+              <div class="text-xs font-bold text-amber-900 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-virus text-amber-600"></i> Special Conditions (Septic Shock)
+              </div>
+              <div id="ref-special-range" class="text-sm font-bold font-mono text-amber-950">0.25 - 1.0+ mcg/kg/min</div>
+              <p id="ref-special-desc" class="text-xs text-amber-900/90 mt-2">
+                Surviving Sepsis Campaign first choice vasopressor. Add Vasopressin 0.03 U/min if Noradrenaline requirement exceeds 0.25 mcg/kg/min.
+              </p>
+            </div>
+
+            <!-- Administration Alerts & Safety -->
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div class="text-xs font-bold text-slate-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Anaesthetic & Safety Warnings
+              </div>
+              <ul id="ref-warnings-list" class="text-xs text-slate-600 space-y-1.5 list-disc list-inside mt-2">
+                <li>Central line strongly preferred; risk of severe extravasation necrosis.</li>
+                <li>Potent peripheral alpha-1 vasoconstriction with mild beta-1 inotropic effect.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TAB 4: SETTINGS & FORMULARY MANAGEMENT     -->
+    <!-- ========================================== -->
+    <div id="tab-settings" class="tab-content hidden space-y-6">
+      
+      <!-- Doctor Profile Settings Card -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+        <div class="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-id-card-clip"></i>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-slate-800">Anaesthesiologist / Practitioner Profile</h3>
+              <p class="text-xs text-slate-500">Your details appear dynamically across the app header and infusion reports</p>
+            </div>
+          </div>
+          <button onclick="saveDoctorProfile()" class="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-1.5">
+            <i class="fa-solid fa-floppy-disk"></i> Save Profile
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Doctor Name</label>
+            <input type="text" id="setting-doc-name" placeholder="e.g. Dr. A. Sharma"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-teal-200">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Medical Registration No.</label>
+            <input type="text" id="setting-doc-reg" placeholder="e.g. MCI / GMC 89234"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-teal-200">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Designation</label>
+            <input type="text" id="setting-doc-designation" placeholder="e.g. Consultant Anaesthesiologist"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-teal-200">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 mb-1">Workplace / Hospital</label>
+            <input type="text" id="setting-doc-workplace" placeholder="e.g. Apollo / NHS Hospital OT"
+              class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slate-800 focus:ring-2 focus:ring-teal-200">
+          </div>
+        </div>
+      </div>
+
+      <!-- Add New Drug / Drug Formulary Editor Card -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+        <div class="flex flex-wrap items-center justify-between pb-4 border-b border-slate-100 gap-3 mb-5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-flask-vial"></i>
+            </div>
+            <div>
+              <h3 id="form-drug-title" class="text-base font-bold text-slate-800">Add New Infusion Drug to Formulary</h3>
+              <p class="text-xs text-slate-500">Configure packaging, commercial presentation, dilution recipes and image</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="resetFormularyToDefault()" class="text-xs text-slate-500 hover:text-rose-600 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-rose-50 transition">
+              <i class="fa-solid fa-rotate-left mr-1"></i> Reset to Factory Formulary
+            </button>
+          </div>
+        </div>
+
+        <!-- Add/Edit Drug Form -->
+        <form id="drug-editor-form" onsubmit="handleDrugFormSubmit(event)" class="space-y-4">
+          <input type="hidden" id="edit-drug-id" value="">
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Drug Generic Name <span class="text-red-500">*</span></label>
+              <input type="text" id="new-drug-name" required placeholder="e.g. Dexmedetomidine"
+                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-sky-200">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Category <span class="text-red-500">*</span></label>
+              <select id="new-drug-category" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-sky-200">
+                <option value="sedatives">Sedatives</option>
+                <option value="analgesics">Analgesics</option>
+                <option value="relaxants">Muscle Relaxants</option>
+                <option value="inotropes">Inotropes & Vasopressors</option>
+                <option value="antihypertensives">Antihypertensives</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Dosing Unit Format <span class="text-red-500">*</span></label>
+              <select id="new-drug-unit" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm bg-white font-mono focus:ring-2 focus:ring-sky-200">
+                <option value="mcg/kg/min">mcg/kg/min (Standard Vasopressors/Inotropes)</option>
+                <option value="mcg/min">mcg/min (Weight-independent: NTG, SNP)</option>
+                <option value="mcg/kg/hr">mcg/kg/hr (Dexmedetomidine, Fentanyl ICU)</option>
+                <option value="mg/kg/hr">mg/kg/hr (Propofol TCI/Infusions)</option>
+                <option value="units/min">units/min (Vasopressin)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Commercial Packaging Details</label>
+              <input type="text" id="new-drug-commercial" placeholder="e.g. 4mg/2ml Norad bitartrate (contains 2mg base)"
+                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-sky-200">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Default Drug Amount in 50ml Syringe</label>
+              <div class="flex gap-2">
+                <input type="number" id="new-drug-default-amount" step="any" placeholder="e.g. 4" required
+                  class="w-2/3 rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-sky-200">
+                <select id="new-drug-amount-unit" class="w-1/3 rounded-xl border border-slate-300 px-2 py-2 text-xs bg-white font-mono">
+                  <option value="mg">mg</option>
+                  <option value="mcg">mcg</option>
+                  <option value="units">units (IU)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Standard Dose Range</label>
+              <input type="text" id="new-drug-range" placeholder="e.g. 0.01 - 3.0 mcg/kg/min"
+                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-sky-200">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Special Clinical Conditions (e.g. Sepsis, Cardiac Surgery)</label>
+              <textarea id="new-drug-special" rows="2" placeholder="e.g. In septic shock titrate to MAP > 65. If dose > 0.25 mcg/kg/min, add Vasopressin."
+                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-sky-200"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1">Clinical Warnings & Administration Notes</label>
+              <textarea id="new-drug-warnings" rows="2" placeholder="e.g. Central line mandatory. Avoid peripheral extravasation."
+                class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-sky-200"></textarea>
+            </div>
+          </div>
+
+          <!-- Image URL or Upload -->
+          <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+            <label class="block text-xs font-bold text-slate-700 mb-1">Vial / Ampoule Image (URL or Upload)</label>
+            <div class="flex flex-col sm:flex-row items-center gap-3">
+              <input type="url" id="new-drug-img-url" placeholder="https://example.com/norad-ampoule.jpg"
+                class="flex-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-xs focus:ring-2 focus:ring-sky-200">
+              <span class="text-xs text-slate-400">or</span>
+              <label class="cursor-pointer bg-white border border-slate-300 hover:bg-slate-100 px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Upload Photo
+                <input type="file" id="new-drug-file" accept="image/*" class="hidden" onchange="handleImageFileUpload(this)">
+              </label>
+              <div id="img-preview-container" class="w-10 h-10 rounded-lg bg-slate-200 overflow-hidden flex items-center justify-center border border-slate-300 text-slate-400">
+                <i class="fa-solid fa-image"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-2">
+            <button type="button" onclick="cancelDrugEdit()" id="btn-cancel-edit" class="hidden text-xs text-slate-600 hover:text-slate-800 px-4 py-2 rounded-xl">
+              Cancel Edit
+            </button>
+            <button type="submit" id="btn-save-drug" class="bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-md">
+              <i class="fa-solid fa-plus"></i> Save Drug to Formulary
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Current Formulary Table -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+          <h4 class="text-base font-bold text-slate-800 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-slate-600"></i> Active Hospital Formulary (<span id="formulary-total-count">0</span> Drugs)
+          </h4>
+          <span class="text-xs text-slate-500">Edit or customize parameters at any time</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-xs">
+            <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Drug & Category</th>
+                <th class="py-3 px-4">Commercial Ampoule / Vial</th>
+                <th class="py-3 px-4">Standard 50ml Recipe</th>
+                <th class="py-3 px-4">Unit & Normal Range</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="formulary-table-body" class="divide-y divide-slate-100 text-slate-700">
+              <!-- Dynamically rendered -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- NOTIFICATION TOAST -->
+  <div id="toast-msg" class="fixed bottom-5 right-5 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5 transition-all transform translate-y-20 opacity-0 pointer-events-none">
+    <i class="fa-solid fa-circle-info text-sky-400 text-sm"></i>
+    <span id="toast-text">Message</span>
+  </div>
+
+  <!-- CLINICAL JAVASCRIPT LOGIC ENGINE -->
+  <script>
+    /* ==========================================================================
+       1. DEFAULT CLINICAL FORMULARY DATABASE (PER ANIONS & CRITICAL CARE STANDARDS)
+       ========================================================================== */
+    const DEFAULT_FORMULARY = [
+      // SEDATIVES
+      {
+        id: 'midazolam',
+        name: 'Midazolam',
+        category: 'sedatives',
+        commercial: '5 mg/5 ml (1 mg/ml) or 10 mg/2 ml (5 mg/ml) ampoule',
+        amount: 50,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.02 - 0.1 mg/kg/hr (approx 0.3 - 1.7 mcg/kg/min)',
+        special: 'ICU sedation titration; accumulate with renal hepatic dysfunction.',
+        warnings: 'Synergistic respiratory depression with opioids. Active metabolite 1-hydroxymidazolam.',
+        img: ''
+      },
+      {
+        id: 'dexmedetomidine',
+        name: 'Dexmedetomidine',
+        category: 'sedatives',
+        commercial: '200 mcg/2 ml (100 mcg/ml) vial / ampoule',
+        amount: 200,
+        amountUnit: 'mcg',
+        unit: 'mcg/kg/hr',
+        range: '0.2 - 1.4 mcg/kg/hr (Maintenance)',
+        special: 'Loading optional (0.5 - 1.0 mcg/kg over 10-20 min; risk of bradycardia/hypotension). Ideal for non-intubated awake sedation.',
+        warnings: 'Watch for severe bradycardia and sinus arrest. Central alpha-2 agonist.',
+        img: ''
+      },
+      {
+        id: 'propofol',
+        name: 'Propofol',
+        category: 'sedatives',
+        commercial: '1% emulsion (10 mg/ml in 20 ml / 50 ml vial)',
+        amount: 500, // 50 ml of pure 1% = 500mg (undiluted)
+        amountUnit: 'mg',
+        unit: 'mg/kg/hr',
+        range: '0.3 - 3.0 mg/kg/hr (ICU sedation) / 4 - 12 mg/kg/hr (TIVA Anaesthesia)',
+        special: 'TIVA anaesthesia: start at 10 mg/kg/hr for first 10 min, then titrate down. Monitor triglycerides in prolonged infusion (PRIS risk).',
+        warnings: 'Propofol Infusion Syndrome (PRIS) if > 4-5 mg/kg/hr > 48h. Severe vasodilation and myocardial depression.',
+        img: ''
+      },
+
+      // ANALGESICS
+      {
+        id: 'fentanyl',
+        name: 'Fentanyl',
+        category: 'analgesics',
+        commercial: '100 mcg/2 ml or 500 mcg/10 ml (50 mcg/ml ampoule)',
+        amount: 500,
+        amountUnit: 'mcg',
+        unit: 'mcg/kg/hr',
+        range: '0.5 - 3.0 mcg/kg/hr (Analgesia / Sedation)',
+        special: 'In cardiac anaesthesia or ventilated patients, higher rates titrated to hemodynamics and surgical stress.',
+        warnings: 'Chest wall rigidity at bolus doses. Highly lipophilic with context-sensitive half time prolongation.',
+        img: ''
+      },
+      {
+        id: 'morphine',
+        name: 'Morphine',
+        category: 'analgesics',
+        commercial: '10 mg/1 ml or 15 mg/1 ml ampoule',
+        amount: 50,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/hr',
+        range: '10 - 40 mcg/kg/hr (approx 1 - 4 mg/hr)',
+        special: 'Post-operative analgesia. Morphine-6-glucuronide accumulates in renal impairment.',
+        warnings: 'Histamine release causing bronchospasm and hypotension. Sphincter of Oddi spasm.',
+        img: ''
+      },
+      {
+        id: 'remifentanil',
+        name: 'Remifentanil',
+        category: 'analgesics',
+        commercial: '1 mg or 2 mg powder vial for reconstitution',
+        amount: 2,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.05 - 0.5 mcg/kg/min (TIVA / Analgesia)',
+        special: 'Organ-independent hydrolysis via non-specific blood and tissue esterases. Rapid offset within 5-10 minutes regardless of duration.',
+        warnings: 'Acute tolerance and severe hyperalgesia; ensure long-acting analgesia instituted prior to discontinuation.',
+        img: ''
+      },
+      {
+        id: 'ketamine',
+        name: 'Ketamine',
+        category: 'analgesics',
+        commercial: '50 mg/ml (10 ml vial) or 10 mg/ml ampoule',
+        amount: 50,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: 'Sub-anaesthetic analgesia: 1 - 3 mcg/kg/min (0.1 - 0.2 mg/kg/hr)',
+        special: 'NMDA receptor antagonist. Excellent opioid-sparing analgesia and status asthmaticus bronchodilation.',
+        warnings: 'Sympathetic stimulation; direct myocardial depressant if catecholamine-depleted. Hallucinations / emergence delirium.',
+        img: ''
+      },
+
+      // MUSCLE RELAXANTS
+      {
+        id: 'atracurium',
+        name: 'Atracurium',
+        category: 'relaxants',
+        commercial: '25 mg/2.5 ml or 50 mg/5 ml (10 mg/ml ampoule)',
+        amount: 100,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '5 - 10 mcg/kg/min (approx 0.3 - 0.6 mg/kg/hr)',
+        special: 'Elimination via Hofmann degradation and ester hydrolysis; safe in severe renal or hepatic failure.',
+        warnings: 'Laudanosine metabolite lowers seizure threshold. Dose-dependent histamine release.',
+        img: ''
+      },
+      {
+        id: 'vecuronium',
+        name: 'Vecuronium',
+        category: 'relaxants',
+        commercial: '4 mg or 10 mg powder for injection vial',
+        amount: 20,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.8 - 1.5 mcg/kg/min (approx 0.05 - 0.1 mg/kg/hr)',
+        special: 'Cardiovascular stability with minimal histamine release. Hepatic and renal excretion.',
+        warnings: 'Prolonged weakness in ICU with corticosteroids (critical illness myopathy). Monitor TOF twitch count.',
+        img: ''
+      },
+      {
+        id: 'rocuronium',
+        name: 'Rocuronium',
+        category: 'relaxants',
+        commercial: '50 mg/5 ml or 100 mg/10 ml (10 mg/ml vial)',
+        amount: 250,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '5 - 12 mcg/kg/min (approx 0.3 - 0.7 mg/kg/hr)',
+        special: 'Reversible specifically with Sugammadex (2 - 16 mg/kg based on depth of block).',
+        warnings: 'Store refrigerated at 2-8°C. Monitor train-of-four (TOF) monitor continuously.',
+        img: ''
+      },
+
+      // INOTROPES & VASOPRESSORS
+      {
+        id: 'noradrenaline',
+        name: 'Noradrenaline',
+        category: 'inotropes',
+        commercial: '2 ml ampoule (4 mg Noradrenaline bitartrate = 2 mg Noradrenaline base; 1 mg/ml base)',
+        amount: 4, // 2 ampoules = 4mg base in 50ml
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.01 - 3.0 mcg/kg/min',
+        special: 'Septic Shock: Surviving Sepsis first line to target MAP ≥ 65 mmHg (typical 0.1 - 1.0 mcg/kg/min). Add vasopressin if escalating.',
+        warnings: 'Potent alpha-1 vasoconstriction. Central venous line mandatory to avoid tissue necrosis.',
+        img: ''
+      },
+      {
+        id: 'phenylephrine',
+        name: 'Phenylephrine',
+        category: 'inotropes',
+        commercial: '10 mg/1 ml (10 mg/ml ampoule)',
+        amount: 10,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.1 - 2.0 mcg/kg/min (or 20 - 100 mcg boluses)',
+        special: 'Pure alpha-1 agonist; ideal for spinal anaesthesia hypotension without tachycardia.',
+        warnings: 'Reflex bradycardia and reduction in cardiac output due to afterload increase.',
+        img: ''
+      },
+      {
+        id: 'vasopressin',
+        name: 'Vasopressin',
+        category: 'inotropes',
+        commercial: '20 units/1 ml ampoule',
+        amount: 20, // 20 units in 50ml = 0.4 units/ml
+        amountUnit: 'units',
+        unit: 'units/min',
+        range: '0.01 - 0.04 units/min (Fixed non-titrated rate)',
+        special: 'Refractory vasodilatory septic shock: run at fixed 0.03 units/min as adjunct to Noradrenaline.',
+        warnings: 'Do NOT titrate rapidly like catecholamines. Splanchnic, coronary and peripheral digital vasoconstriction.',
+        img: ''
+      },
+      {
+        id: 'dopamine',
+        name: 'Dopamine',
+        category: 'inotropes',
+        commercial: '200 mg/5 ml (40 mg/ml ampoule)',
+        amount: 200,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '2 - 20 mcg/kg/min (Low/Renal: 1-3, Inotropic: 3-10, Vasopressor: 10-20)',
+        special: 'Inotropic and chronotropic support. Note: low dose "renal protection" is not clinically recommended.',
+        warnings: 'Marked tachyarrhythmias (atrial fibrillation, sinus tachycardia).',
+        img: ''
+      },
+      {
+        id: 'dobutamine',
+        name: 'Dobutamine',
+        category: 'inotropes',
+        commercial: '250 mg/20 ml (12.5 mg/ml vial / ampoule)',
+        amount: 250,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '2.5 - 20 mcg/kg/min',
+        special: 'Cardiogenic shock and low cardiac output states with adequate MAP. Inodilator action.',
+        warnings: 'Hypotension due to beta-2 peripheral vasodilation; often paired with Noradrenaline. Tachycardia.',
+        img: ''
+      },
+      {
+        id: 'adrenaline',
+        name: 'Adrenaline',
+        category: 'inotropes',
+        commercial: '1 mg/1 ml (1:1000 ampoule)',
+        amount: 4,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.01 - 1.0 mcg/kg/min',
+        special: 'Anaphylaxis, post-cardiac arrest shock, severe cardiogenic shock or bronchospasm.',
+        warnings: 'Lactic acidosis from beta-2 stimulation of aerobic glycolysis. Arrhythmogenic potential.',
+        img: ''
+      },
+      {
+        id: 'isoprenaline',
+        name: 'Isoprenaline',
+        category: 'inotropes',
+        commercial: '2 mg/1 ml or 0.2 mg/1 ml ampoule',
+        amount: 2,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.01 - 0.2 mcg/kg/min (approx 0.5 - 5 mcg/min)',
+        special: 'Refractory bradycardia pending transvenous pacing, heart transplant denervated chronotropy.',
+        warnings: 'Pure beta-1 and beta-2 agonist; causes profound vasodilation and drop in diastolic pressure.',
+        img: ''
+      },
+
+      // ANTIHYPERTENSIVES
+      {
+        id: 'nitroglycerin',
+        name: 'Nitroglycerin (NTG)',
+        category: 'antihypertensives',
+        commercial: '25 mg/5 ml or 50 mg/10 ml (5 mg/ml ampoule/vial)',
+        amount: 50,
+        amountUnit: 'mg',
+        unit: 'mcg/min',
+        range: '5 - 200 mcg/min (Weight-independent standard)',
+        special: 'Venodilator > arteriodilator. Reduces preload in acute coronary syndrome and acute pulmonary edema.',
+        warnings: 'Use non-PVC tubing (adsorbs to plastic). Risk of severe reflex tachycardia and tachyphylaxis.',
+        img: ''
+      },
+      {
+        id: 'labetalol',
+        name: 'Labetalol',
+        category: 'antihypertensives',
+        commercial: '100 mg/20 ml (5 mg/ml ampoule)',
+        amount: 100,
+        amountUnit: 'mg',
+        unit: 'mg/kg/hr',
+        range: '0.25 - 2.0 mg/kg/hr (or 20 - 120 mg/hr titrate)',
+        special: 'Combined alpha-1 and non-selective beta blocker (ratio 1:7 IV). Acute hypertensive emergencies / preeclampsia.',
+        warnings: 'Contraindicated in asthma, high-degree heart block, severe bradycardia.',
+        img: ''
+      },
+      {
+        id: 'sodium_nitroprusside',
+        name: 'Sodium Nitroprusside (SNP)',
+        category: 'antihypertensives',
+        commercial: '50 mg/2 ml powder vial for reconstitution',
+        amount: 50,
+        amountUnit: 'mg',
+        unit: 'mcg/kg/min',
+        range: '0.3 - 5.0 mcg/kg/min',
+        special: 'Balanced arterial and venous dilator for instant blood pressure control in aortic dissection or pheochromocytoma.',
+        warnings: 'Wrap in light-protective sleeve. Cyanide and thiocyanate toxicity if infused > 2 mcg/kg/min prolonged.',
+        img: ''
+      },
+      {
+        id: 'hydralazine',
+        name: 'Hydralazine',
+        category: 'antihypertensives',
+        commercial: '20 mg/1 ml powder/ampoule',
+        amount: 20,
+        amountUnit: 'mg',
+        unit: 'mcg/min',
+        range: '1.5 - 5 mg/hr (approx 25 - 80 mcg/min)',
+        special: 'Direct arteriolar vasodilator. Common in severe pregnancy-induced hypertension and preeclampsia.',
+        warnings: 'Reflex sympathetic activation (tachycardia, palpitations, fluid retention). Slow onset 15-20 min.',
+        img: ''
+      }
+    ];
+
+    /* ==========================================================================
+       2. APP STATE MANAGEMENT & LOCAL STORAGE PERSISTENCE
+       ========================================================================== */
+    const STORAGE_KEY_FORMULARY = 'anaesthesia_infusion_formulary_v2';
+    const STORAGE_KEY_STATE = 'anaesthesia_infusion_state_v2';
+    const STORAGE_KEY_DOCTOR = 'anaesthesia_doctor_profile_v2';
+
+    // Application Global State
+    let appState = {
+      weight: 70,
+      age: '',
+      sex: '',
+      syringeVolume: 50, // ml
+      selectedDrugIds: ['noradrenaline', 'propofol'], // defaults
+      activeDrugId: 'noradrenaline',
+      dilutions: {}, // drugId -> { amount: number, unit: 'mg'|'mcg'|'units', syringeVol: 50 }
+      pumpRate: 5.0, // ml/hr
+      targetDose: 0.10 // in active drug's unit
+    };
+
+    let doctorProfile = {
+      name: '',
+      registration: '',
+      designation: '',
+      workplace: ''
+    };
+
+    let formulary = [];
+
+    // Initialize application
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedData();
+      renderDoctorHeader();
+      renderCategoriesAccordion();
+      renderSelectedBadges();
+      renderPrepCards();
+      renderCalcDrugPills();
+      updateCalculatorDisplays();
+      renderFormularyTable();
+    });
+
+    function loadSavedData() {
+      // Load Formulary
+      try {
+        const savedFormulary = localStorage.getItem(STORAGE_KEY_FORMULARY);
+        if (savedFormulary) {
+          formulary = JSON.parse(savedFormulary);
+        } else {
+          formulary = [...DEFAULT_FORMULARY];
+          localStorage.setItem(STORAGE_KEY_FORMULARY, JSON.stringify(formulary));
+        }
+      } catch (e) {
+        formulary = [...DEFAULT_FORMULARY];
+      }
+
+      // Load Doctor
+      try {
+        const savedDoc = localStorage.getItem(STORAGE_KEY_DOCTOR);
+        if (savedDoc) {
+          doctorProfile = JSON.parse(savedDoc);
+          document.getElementById('setting-doc-name').value = doctorProfile.name || '';
+          document.getElementById('setting-doc-reg').value = doctorProfile.registration || '';
+          document.getElementById('setting-doc-designation').value = doctorProfile.designation || '';
+          document.getElementById('setting-doc-workplace').value = doctorProfile.workplace || '';
+        }
+      } catch (e) {}
+
+      // Load App State
+      try {
+        const savedState = localStorage.getItem(STORAGE_KEY_STATE);
+        if (savedState) {
+          const parsed = JSON.parse(savedState);
+          appState = { ...appState, ...parsed };
+        }
+      } catch (e) {}
+
+      // Reflect state to UI inputs
+      document.getElementById('patient-weight').value = appState.weight || '';
+      document.getElementById('patient-age').value = appState.age || '';
+      document.getElementById('patient-sex').value = appState.sex || '';
+      setSyringeSize(appState.syringeVolume || 50, false);
+      updatePatientBanner();
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(appState));
+    }
+
+    function saveFormulary() {
+      localStorage.setItem(STORAGE_KEY_FORMULARY, JSON.stringify(formulary));
+      renderCategoriesAccordion();
+      renderPrepCards();
+      renderCalcDrugPills();
+      renderFormularyTable();
+    }
+
+    /* ==========================================================================
+       3. NAVIGATION & TAB SWITCHING
+       ========================================================================== */
+    function switchTab(tabId) {
+      // Hide all contents
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-sky-400', 'text-sky-400', 'bg-sky-950/40');
+        btn.classList.add('border-transparent', 'text-slate-400');
+      });
+
+      // Show selected
+      const targetContent = document.getElementById(tabId);
+      if (targetContent) targetContent.classList.remove('hidden');
+
+      const targetNav = document.getElementById('nav-' + tabId);
+      if (targetNav) {
+        targetNav.classList.add('active', 'border-sky-400', 'text-sky-400', 'bg-sky-950/40');
+        targetNav.classList.remove('border-transparent', 'text-slate-400');
+      }
+
+      // Re-render when switching to specific tabs
+      if (tabId === 'tab-prep') {
+        renderPrepCards();
+      } else if (tabId === 'tab-calc') {
+        renderCalcDrugPills();
+        updateCalculatorDisplays();
+      }
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function proceedToPrep() {
+      if (!validateWeight()) {
+        showToast("Please enter patient weight (kg) first");
+        document.getElementById('patient-weight').focus();
+        return;
+      }
+      if (appState.selectedDrugIds.length === 0) {
+        showToast("Please select at least one drug first");
+        return;
+      }
+      switchTab('tab-prep');
+    }
+
+    /* ==========================================================================
+       4. DOCTOR PROFILE HANDLERS
+       ========================================================================== */
+    function saveDoctorProfile() {
+      doctorProfile = {
+        name: document.getElementById('setting-doc-name').value.trim(),
+        registration: document.getElementById('setting-doc-reg').value.trim(),
+        designation: document.getElementById('setting-doc-designation').value.trim(),
+        workplace: document.getElementById('setting-doc-workplace').value.trim()
+      };
+      localStorage.setItem(STORAGE_KEY_DOCTOR, JSON.stringify(doctorProfile));
+      renderDoctorHeader();
+      showToast("Doctor profile updated successfully!");
+    }
+
+    function renderDoctorHeader() {
+      const nameEl = document.getElementById('hdr-doc-name');
+      const metaEl = document.getElementById('hdr-doc-meta');
+
+      if (doctorProfile.name) {
+        nameEl.textContent = doctorProfile.name;
+        let meta = [];
+        if (doctorProfile.designation) meta.push(doctorProfile.designation);
+        if (doctorProfile.registration) meta.push('Reg: ' + doctorProfile.registration);
+        if (doctorProfile.workplace) meta.push(doctorProfile.workplace);
+        metaEl.textContent = meta.join(' • ') || 'Anaesthesiologist';
+      } else {
+        nameEl.textContent = "Dr. Guest Anaesthesiologist";
+        metaEl.textContent = "Tap Settings to configure name & reg";
+      }
+    }
+
+    /* ==========================================================================
+       5. TAB 1: PATIENT DEMOGRAPHICS & DRUG ACCORDION
+       ========================================================================== */
+    function updatePatientData() {
+      const wVal = parseFloat(document.getElementById('patient-weight').value);
+      appState.weight = isNaN(wVal) ? null : wVal;
+      appState.age = document.getElementById('patient-age').value.trim();
+      appState.sex = document.getElementById('patient-sex').value;
+      
+      validateWeight();
+      updatePatientBanner();
+      saveState();
+      updateCalculatorDisplays();
+    }
+
+    function validateWeight() {
+      const err = document.getElementById('weight-error-msg');
+      if (!appState.weight || appState.weight <= 0 || appState.weight > 300) {
+        err.classList.remove('hidden');
+        return false;
+      } else {
+        err.classList.add('hidden');
+        return true;
+      }
+    }
+
+    function updatePatientBanner() {
+      document.getElementById('banner-weight').textContent = appState.weight ? `${appState.weight} kg` : '-- kg';
+      document.getElementById('banner-age').textContent = appState.age ? `${appState.age} yrs` : 'Not set';
+      document.getElementById('banner-sex').textContent = appState.sex || 'Not set';
+      document.getElementById('banner-syringe').textContent = `${appState.syringeVolume} ml`;
+      
+      const calcWeightBadge = document.getElementById('calc-patient-weight-indicator');
+      if (calcWeightBadge) {
+        calcWeightBadge.textContent = appState.weight ? `Patient: ${appState.weight} kg` : `Patient: Weight Not Set!`;
+      }
+    }
+
+    function setSyringeSize(volume, shouldSave = true) {
+      appState.syringeVolume = volume;
+      document.querySelectorAll('.syringe-selector').forEach(btn => {
+        btn.classList.remove('border-sky-600', 'bg-sky-50', 'text-sky-700', 'border-2');
+        btn.classList.add('border-slate-300', 'bg-white', 'text-slate-700', 'border');
+      });
+      const activeBtn = document.getElementById(`syringe-btn-${volume}`);
+      if (activeBtn) {
+        activeBtn.classList.add('border-sky-600', 'bg-sky-50', 'text-sky-700', 'border-2');
+        activeBtn.classList.remove('border-slate-300', 'bg-white', 'text-slate-700', 'border');
+      }
+      const prepDisp = document.getElementById('prep-syringe-display');
+      if (prepDisp) prepDisp.textContent = `${volume} ml`;
+
+      updatePatientBanner();
+      if (shouldSave) saveState();
+      renderPrepCards();
+      updateCalculatorDisplays();
+    }
+
+    const CATEGORY_META = {
+      sedatives: { name: 'Sedatives', icon: 'fa-moon', color: 'indigo' },
+      analgesics: { name: 'Analgesics', icon: 'fa-shield-halved', color: 'rose' },
+      relaxants: { name: 'Muscle Relaxants', icon: 'fa-person-falling', color: 'amber' },
+      inotropes: { name: 'Inotropes & Vasopressors', icon: 'fa-heart-pulse', color: 'red' },
+      antihypertensives: { name: 'Antihypertensives', icon: 'fa-gauge-high', color: 'teal' }
+    };
+
+    function renderCategoriesAccordion() {
+      const container = document.getElementById('drug-categories-container');
+      container.innerHTML = '';
+
+      const categories = ['sedatives', 'analgesics', 'relaxants', 'inotropes', 'antihypertensives'];
+
+      categories.forEach(catKey => {
+        const meta = CATEGORY_META[catKey];
+        const catDrugs = formulary.filter(d => d.category === catKey);
+
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm transition";
+
+        // Accordion Header
+        const header = document.createElement('button');
+        header.type = 'button';
+        header.className = "w-full p-4 flex items-center justify-between text-left bg-slate-50/70 hover:bg-slate-100/80 transition";
+        header.onclick = () => toggleAccordion(catKey);
+
+        const countSelectedInCat = catDrugs.filter(d => appState.selectedDrugIds.includes(d.id)).length;
+
+        header.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-${meta.color}-100 text-${meta.color}-700 flex items-center justify-center text-sm">
+              <i class="fa-solid ${meta.icon}"></i>
+            </div>
+            <div>
+              <div class="font-bold text-sm text-slate-800 flex items-center gap-2">
+                ${meta.name}
+                ${countSelectedInCat > 0 ? `<span class="bg-sky-500 text-white font-mono text-[10px] px-2 py-0.2 rounded-full font-bold">${countSelectedInCat} active</span>` : ''}
+              </div>
+              <div class="text-[11px] text-slate-500">${catDrugs.length} drugs configured in formulary</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-medium">Touch to expand</span>
+            <i id="chevron-${catKey}" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform transform"></i>
+          </div>
+        `;
+
+        // Accordion Content (Drugs Grid)
+        const body = document.createElement('div');
+        body.id = `accordion-body-${catKey}`;
+        body.className = "p-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 bg-white";
+
+        catDrugs.forEach(drug => {
+          const isSelected = appState.selectedDrugIds.includes(drug.id);
+          const btn = document.createElement('div');
+          btn.className = `p-3 rounded-xl border cursor-pointer transition flex flex-col justify-between select-none ${
+            isSelected 
+              ? 'border-sky-500 bg-sky-50/80 shadow-sm ring-1 ring-sky-400' 
+              : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+          }`;
+          btn.onclick = () => toggleDrugSelection(drug.id);
+
+          btn.innerHTML = `
+            <div class="flex items-start justify-between gap-2">
+              <div class="font-bold text-xs ${isSelected ? 'text-sky-950' : 'text-slate-800'}">${drug.name}</div>
+              <div class="w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${
+                isSelected ? 'bg-sky-600 text-white' : 'border border-slate-300 text-transparent'
+              }">
+                <i class="fa-solid fa-check"></i>
+              </div>
+            </div>
+            <div class="mt-2 text-[10px] text-slate-500 line-clamp-1">${drug.commercial}</div>
+            <div class="mt-1 text-[10px] font-mono font-semibold text-slate-600 bg-slate-100/80 px-1.5 py-0.5 rounded w-max">
+              ${drug.unit}
+            </div>
+          `;
+          body.appendChild(btn);
+        });
+
+        // "+ Add New Drug" card inside each category
+        const addCard = document.createElement('div');
+        addCard.className = "p-3 rounded-xl border border-dashed border-sky-300 hover:border-sky-500 bg-sky-50/40 hover:bg-sky-50 cursor-pointer transition flex flex-col items-center justify-center text-center group min-h-[90px]";
+        addCard.onclick = () => quickAddNewDrugToCategory(catKey);
+        addCard.innerHTML = `
+          <div class="w-6 h-6 rounded-full bg-sky-100 group-hover:bg-sky-200 text-sky-700 flex items-center justify-center text-xs mb-1">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <span class="text-xs font-bold text-sky-700 group-hover:text-sky-800">+ Add Drug</span>
+          <span class="text-[10px] text-sky-600/80">Configure in Tab 4</span>
+        `;
+        body.appendChild(addCard);
+
+        card.appendChild(header);
+        card.appendChild(body);
+        container.appendChild(card);
+      });
+    }
+
+    function toggleAccordion(catKey) {
+      const body = document.getElementById(`accordion-body-${catKey}`);
+      const chevron = document.getElementById(`chevron-${catKey}`);
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        chevron.classList.add('rotate-180');
+      } else {
+        body.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      }
+    }
+
+    function expandAllCategories(expand) {
+      const categories = ['sedatives', 'analgesics', 'relaxants', 'inotropes', 'antihypertensives'];
+      categories.forEach(catKey => {
+        const body = document.getElementById(`accordion-body-${catKey}`);
+        const chevron = document.getElementById(`chevron-${catKey}`);
+        if (body && chevron) {
+          if (expand) {
+            body.classList.remove('hidden');
+            chevron.classList.add('rotate-180');
+          } else {
+            body.classList.add('hidden');
+            chevron.classList.remove('rotate-180');
+          }
+        }
+      });
+    }
+
+    function toggleDrugSelection(drugId) {
+      const index = appState.selectedDrugIds.indexOf(drugId);
+      if (index > -1) {
+        appState.selectedDrugIds.splice(index, 1);
+        if (appState.activeDrugId === drugId) {
+          appState.activeDrugId = appState.selectedDrugIds[0] || null;
+        }
+      } else {
+        appState.selectedDrugIds.push(drugId);
+        if (!appState.activeDrugId) {
+          appState.activeDrugId = drugId;
+        }
+      }
+      saveState();
+      renderCategoriesAccordion();
+      renderSelectedBadges();
+      renderPrepCards();
+      renderCalcDrugPills();
+      updateCalculatorDisplays();
+    }
+
+    function clearAllSelectedDrugs() {
+      appState.selectedDrugIds = [];
+      appState.activeDrugId = null;
+      saveState();
+      renderCategoriesAccordion();
+      renderSelectedBadges();
+      renderPrepCards();
+      renderCalcDrugPills();
+      updateCalculatorDisplays();
+      showToast("Cleared selected drugs");
+    }
+
+    function renderSelectedBadges() {
+      const count = appState.selectedDrugIds.length;
+      document.getElementById('badge-drug-count').textContent = count;
+      document.getElementById('floating-selected-count').textContent = count;
+
+      const selectedNames = appState.selectedDrugIds
+        .map(id => {
+          const d = formulary.find(item => item.id === id);
+          return d ? d.name : id;
+        })
+        .join(', ');
+
+      const namesEl = document.getElementById('floating-selected-names');
+      const quickSummaryEl = document.getElementById('quick-selection-summary');
+
+      if (count === 0) {
+        namesEl.textContent = "No drugs selected yet. Expand categories above.";
+        quickSummaryEl.textContent = "No drugs selected";
+      } else {
+        namesEl.textContent = selectedNames;
+        quickSummaryEl.textContent = `Selected (${count}): ${selectedNames}`;
+      }
+    }
+
+    function quickAddNewDrugToCategory(categoryKey) {
+      switchTab('tab-settings');
+      document.getElementById('new-drug-category').value = categoryKey;
+      document.getElementById('new-drug-name').focus();
+      showToast(`Adding new drug under ${CATEGORY_META[categoryKey].name}`);
+    }
+
+    /* ==========================================================================
+       6. TAB 2: COMMERCIAL PREPARATION & DILUTION BUILDER
+       ========================================================================== */
+    function getDrugDilution(drug) {
+      if (appState.dilutions[drug.id]) {
+        return appState.dilutions[drug.id];
+      }
+      // initialize default
+      const defaultDil = {
+        amount: drug.amount,
+        unit: drug.amountUnit,
+        syringeVol: appState.syringeVolume
+      };
+      appState.dilutions[drug.id] = defaultDil;
+      return defaultDil;
+    }
+
+    function renderPrepCards() {
+      const grid = document.getElementById('prep-cards-grid');
+      const emptyState = document.getElementById('prep-empty-state');
+      grid.innerHTML = '';
+
+      if (appState.selectedDrugIds.length === 0) {
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+
+      appState.selectedDrugIds.forEach(drugId => {
+        const drug = formulary.find(d => d.id === drugId);
+        if (!drug) return;
+
+        const dilution = getDrugDilution(drug);
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between";
+
+        // Calculate concentrations
+        // Conversion helpers
+        let totalMcg = 0;
+        if (dilution.unit === 'mg') totalMcg = dilution.amount * 1000;
+        else if (dilution.unit === 'mcg') totalMcg = dilution.amount;
+        else if (dilution.unit === 'units') totalMcg = dilution.amount; // for vasopressin units
+
+        const syringeVol = appState.syringeVolume;
+        const concPerMl = dilution.amount / syringeVol; // in native units / ml
+        const concMcgPerMl = totalMcg / syringeVol;
+
+        // Noradrenaline special helper text check
+        let specialHighlight = '';
+        if (drug.id === 'noradrenaline') {
+          specialHighlight = `
+            <div class="mt-2 text-[11px] bg-amber-50 text-amber-900 border border-amber-200 rounded-lg p-2 font-medium">
+              <i class="fa-solid fa-triangle-exclamation text-amber-600 mr-1"></i>
+              <strong>Standard Ampoule:</strong> 2 ml ampoule contains 4 mg Noradrenaline bitartrate, which yields exactly <strong>2 mg Noradrenaline base</strong>. 
+              Adding 2 ampoules (8 mg bitartrate) to 50 ml provides <strong>4 mg base in 50 ml = 80 mcg/ml</strong>.
+            </div>
+          `;
+        }
+
+        // Image placeholder / user uploaded
+        const imageThumb = drug.img 
+          ? `<img src="${drug.img}" alt="${drug.name}" class="w-full h-full object-cover">` 
+          : `<div class="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-400">
+               <i class="fa-solid fa-vial-circle-check text-2xl text-sky-600/70 mb-1"></i>
+               <span class="text-[9px] uppercase tracking-wider font-semibold">Ampoule / Vial</span>
+             </div>`;
+
+        card.innerHTML = `
+          <div class="p-5">
+            <!-- Header with commercial package & thumbnail -->
+            <div class="flex items-start gap-4">
+              <div class="w-20 h-20 rounded-xl overflow-hidden border border-slate-200 flex-shrink-0 shadow-inner bg-slate-50">
+                ${imageThumb}
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between">
+                  <h3 class="font-bold text-base text-slate-800">${drug.name}</h3>
+                  <span class="text-[10px] font-mono uppercase bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${drug.category}</span>
+                </div>
+                <div class="text-xs font-semibold text-sky-800 mt-1 flex items-center gap-1.5">
+                  <i class="fa-solid fa-box-archive text-sky-600"></i> Packaging: ${drug.commercial}
+                </div>
+                <div class="text-[11px] text-slate-500 mt-1">
+                  Target Infusion Unit: <span class="font-mono font-bold text-slate-700">${drug.unit}</span>
+                </div>
+              </div>
+            </div>
+
+            ${specialHighlight}
+
+            <!-- Dilution Builder Form -->
+            <div class="mt-4 pt-4 border-t border-slate-100 space-y-3">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Amount of Drug added to <span class="text-sky-600">${syringeVol} ml</span> Syringe:
+                </label>
+                <button type="button" onclick="editDrugFromPrep('${drug.id}')" class="text-[11px] text-sky-600 hover:text-sky-800 font-medium">
+                  <i class="fa-solid fa-gear"></i> Edit in Formulary
+                </button>
+              </div>
+
+              <!-- Input amount & unit -->
+              <div class="grid grid-cols-2 gap-3">
+                <div class="relative">
+                  <input type="number" step="any" min="0.001" value="${dilution.amount}"
+                    id="dil-input-${drug.id}"
+                    class="block w-full rounded-xl border border-slate-300 px-3 py-2 font-mono font-bold text-slate-900 text-sm focus:ring-2 focus:ring-sky-200"
+                    oninput="updateDrugDilutionAmount('${drug.id}', this.value)">
+                </div>
+                <div>
+                  <select id="dil-unit-${drug.id}"
+                    class="block w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-mono font-semibold text-slate-800 bg-white focus:ring-2 focus:ring-sky-200"
+                    onchange="updateDrugDilutionUnit('${drug.id}', this.value)">
+                    <option value="mg" ${dilution.unit === 'mg' ? 'selected' : ''}>mg</option>
+                    <option value="mcg" ${dilution.unit === 'mcg' ? 'selected' : ''}>mcg</option>
+                    <option value="units" ${dilution.unit === 'units' ? 'selected' : ''}>units (IU)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Quick Strength Presets Buttons -->
+              <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                <span class="text-[10px] text-slate-400 uppercase font-semibold">Standard Dilutions:</span>
+                <button onclick="applyPresetDilution('${drug.id}', 1)" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono font-medium">
+                  1x Standard (${drug.amount} ${drug.amountUnit})
+                </button>
+                <button onclick="applyPresetDilution('${drug.id}', 2)" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono font-medium">
+                  Double (2x)
+                </button>
+                <button onclick="applyPresetDilution('${drug.id}', 4)" class="text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono font-medium">
+                  Quad (4x)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom Calculated Syringe Concentration Bar -->
+          <div class="bg-slate-900 text-white p-4 rounded-b-2xl border-t border-slate-800 flex items-center justify-between">
+            <div>
+              <div class="text-[10px] uppercase font-mono text-slate-400">Final Syringe Concentration</div>
+              <div class="font-mono text-base font-bold text-emerald-400">
+                ${dilution.unit === 'units' 
+                  ? `${concPerMl.toFixed(3)} units / ml` 
+                  : `${concMcgPerMl.toFixed(1)} mcg / ml`}
+              </div>
+              <div class="text-[10px] text-slate-400 font-mono">
+                (${concPerMl.toFixed(4)} ${dilution.unit} / ml in ${syringeVol} ml)
+              </div>
+            </div>
+
+            <button onclick="selectDrugForCalc('${drug.id}')" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow">
+              <i class="fa-solid fa-calculator"></i> Calculate
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+    }
+
+    function updateDrugDilutionAmount(drugId, val) {
+      const parsed = parseFloat(val);
+      if (!isNaN(parsed) && parsed > 0) {
+        if (!appState.dilutions[drugId]) appState.dilutions[drugId] = {};
+        appState.dilutions[drugId].amount = parsed;
+        saveState();
+        updateCalculatorDisplays();
+        renderPrepConcentrationBadge(drugId);
+      }
+    }
+
+    function updateDrugDilutionUnit(drugId, unit) {
+      if (!appState.dilutions[drugId]) appState.dilutions[drugId] = {};
+      appState.dilutions[drugId].unit = unit;
+      saveState();
+      renderPrepCards();
+      updateCalculatorDisplays();
+    }
+
+    function applyPresetDilution(drugId, multiplier) {
+      const drug = formulary.find(d => d.id === drugId);
+      if (!drug) return;
+      if (!appState.dilutions[drugId]) appState.dilutions[drugId] = {};
+      appState.dilutions[drugId].amount = drug.amount * multiplier;
+      appState.dilutions[drugId].unit = drug.amountUnit;
+      saveState();
+      renderPrepCards();
+      updateCalculatorDisplays();
+      showToast(`Applied ${multiplier}x dilution recipe for ${drug.name}`);
+    }
+
+    function renderPrepConcentrationBadge(drugId) {
+      // Re-render whole cards to reflect accurate math
+      renderPrepCards();
+    }
+
+    function selectDrugForCalc(drugId) {
+      appState.activeDrugId = drugId;
+      saveState();
+      switchTab('tab-calc');
+    }
+
+    function editDrugFromPrep(drugId) {
+      switchTab('tab-settings');
+      editDrugFormulary(drugId);
+    }
+
+    /* ==========================================================================
+       7. TAB 3: INFUSION RATE & MICROGRAMS / KG / MIN CALCULATOR
+       ========================================================================== */
+    function renderCalcDrugPills() {
+      const container = document.getElementById('calc-drug-pills-container');
+      container.innerHTML = '';
+
+      if (appState.selectedDrugIds.length === 0) return;
+
+      appState.selectedDrugIds.forEach(id => {
+        const drug = formulary.find(d => d.id === id);
+        if (!drug) return;
+
+        const isActive = appState.activeDrugId === id;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = `px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+          isActive 
+            ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30' 
+            : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+        }`;
+        btn.onclick = () => {
+          appState.activeDrugId = id;
+          saveState();
+          renderCalcDrugPills();
+          updateCalculatorDisplays();
+        };
+
+        btn.innerHTML = `
+          <span>${drug.name}</span>
+          <span class="text-[10px] font-mono px-1.5 py-0.2 rounded ${isActive ? 'bg-sky-700 text-sky-100' : 'bg-slate-200 text-slate-600'}">
+            ${drug.unit}
+          </span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function updateCalculatorDisplays() {
+      const activeWorkspace = document.getElementById('calc-active-workspace');
+      const emptyView = document.getElementById('calc-no-drug-view');
+
+      if (!appState.activeDrugId || appState.selectedDrugIds.length === 0) {
+        if (activeWorkspace) activeWorkspace.classList.add('hidden');
+        if (emptyView) emptyView.classList.remove('hidden');
+        return;
+      }
+
+      if (activeWorkspace) activeWorkspace.classList.remove('hidden');
+      if (emptyView) emptyView.classList.add('hidden');
+
+      const drug = formulary.find(d => d.id === appState.activeDrugId);
+      if (!drug) return;
+
+      const weight = appState.weight && appState.weight > 0 ? appState.weight : 70; // fallback default
+      const dilution = getDrugDilution(drug);
+      const syringeVol = appState.syringeVolume;
+
+      // Calculate Concentration
+      // Native amount in syringe
+      let totalMcg = 0;
+      if (dilution.unit === 'mg') totalMcg = dilution.amount * 1000;
+      else if (dilution.unit === 'mcg') totalMcg = dilution.amount;
+      else if (dilution.unit === 'units') totalMcg = dilution.amount; // for units
+
+      const concPerMl = dilution.amount / syringeVol; // mg/ml or units/ml
+      const concMcgPerMl = totalMcg / syringeVol; // mcg/ml
+
+      // Update Hero Header
+      document.getElementById('calc-hero-drug-name').textContent = drug.name;
+      document.getElementById('calc-hero-prep-desc').textContent = `${dilution.amount} ${dilution.unit} in ${syringeVol} ml`;
+      document.getElementById('calc-hero-unit-tag').textContent = drug.unit;
+
+      if (dilution.unit === 'units') {
+        document.getElementById('calc-hero-concentration').textContent = `${concPerMl.toFixed(3)} units/ml`;
+        document.getElementById('calc-hero-concentration-mg').textContent = `(${dilution.amount} units / ${syringeVol} ml)`;
+      } else {
+        document.getElementById('calc-hero-concentration').textContent = `${concMcgPerMl.toFixed(1)} mcg/ml`;
+        document.getElementById('calc-hero-concentration-mg').textContent = `(${(concMcgPerMl / 1000).toFixed(4)} mg/ml)`;
+      }
+
+      // Calculations at 1 ml/hr and 1 ml/min
+      // Rule of 1 ml/hr:
+      // Rate = 1 ml/hr = 1/60 ml/min
+      // Dose Delivered:
+      let doseAt1MlHr = 0;
+      let doseAt1MlMin = 0;
+      let unitLabel = drug.unit;
+
+      if (drug.unit === 'mcg/kg/min') {
+        // concMcgPerMl mcg in 1 ml. In 1 hour, that is concMcgPerMl / 60 mcg/min.
+        // per kg: (concMcgPerMl / 60) / weight
+        doseAt1MlHr = (concMcgPerMl / 60) / weight;
+        // 1 ml/min = concMcgPerMl mcg/min / weight
+        doseAt1MlMin = concMcgPerMl / weight;
+      } else if (drug.unit === 'mcg/min') {
+        // weight independent (e.g. NTG)
+        doseAt1MlHr = concMcgPerMl / 60;
+        doseAt1MlMin = concMcgPerMl;
+      } else if (drug.unit === 'mcg/kg/hr') {
+        // (concMcgPerMl * 1) / weight
+        doseAt1MlHr = concMcgPerMl / weight;
+        doseAt1MlMin = (concMcgPerMl * 60) / weight;
+      } else if (drug.unit === 'mg/kg/hr') {
+        const concMgPerMl = concMcgPerMl / 1000;
+        doseAt1MlHr = concMgPerMl / weight;
+        doseAt1MlMin = (concMgPerMl * 60) / weight;
+      } else if (drug.unit === 'units/min') {
+        // vasopressin
+        doseAt1MlHr = concPerMl / 60;
+        doseAt1MlMin = concPerMl;
+      }
+
+      // Populate 1 ml/hr card
+      document.getElementById('stat-1ml-hr').textContent = formatDecimal(doseAt1MlHr);
+      document.getElementById('stat-1ml-hr-unit').textContent = unitLabel;
+      document.getElementById('stat-1ml-hr-desc').textContent = 
+        drug.unit.includes('kg') 
+          ? `1 ml/hr delivers ${formatDecimal(doseAt1MlHr)} ${unitLabel} to a ${weight} kg patient.`
+          : `1 ml/hr delivers ${formatDecimal(doseAt1MlHr)} ${unitLabel}.`;
+
+      // Populate 1 ml/min card
+      document.getElementById('stat-1ml-min').textContent = formatDecimal(doseAt1MlMin);
+      document.getElementById('stat-1ml-min-unit').textContent = unitLabel;
+      document.getElementById('stat-1ml-min-desc').textContent = 
+        `1 ml/min (rapid rate of 60 ml/hr) delivers ${formatDecimal(doseAt1MlMin)} ${unitLabel}.`;
+
+      // Recalculate forward and reverse calculators
+      calculateForwardDose(concMcgPerMl, concPerMl, weight, drug.unit);
+      calculateReverseRate(concMcgPerMl, concPerMl, weight, drug.unit);
+
+      // Populate References
+      document.getElementById('ref-dose-range').textContent = drug.range || 'Consult departmental protocol';
+      document.getElementById('ref-special-range').textContent = drug.special || 'Titrate to clinical hemodynamic endpoints.';
+      
+      const warningsList = document.getElementById('ref-warnings-list');
+      warningsList.innerHTML = '';
+      if (drug.warnings) {
+        const items = drug.warnings.split('.').filter(t => t.trim().length > 0);
+        items.forEach(it => {
+          const li = document.createElement('li');
+          li.textContent = it.trim();
+          warningsList.appendChild(li);
+        });
+      }
+
+      // Populate presets for target dose
+      renderTargetPresets(drug);
+    }
+
+    function formatDecimal(val) {
+      if (val === 0) return '0';
+      if (val < 0.01) return val.toFixed(4);
+      if (val < 1) return val.toFixed(3);
+      if (val < 10) return val.toFixed(2);
+      return val.toFixed(1);
+    }
+
+    // FORWARD CALCULATION: Pump Rate (ml/hr) -> Delivered Dose
+    function calculateForwardDose(concMcgPerMl, concPerMl, weight, unit) {
+      const rateMlHr = parseFloat(appState.pumpRate) || 0;
+      let delivered = 0;
+      let totalPerMin = 0;
+      let totalPerHr = 0;
+
+      if (unit === 'mcg/kg/min') {
+        delivered = ((rateMlHr * concMcgPerMl) / 60) / weight;
+        totalPerMin = (rateMlHr * concMcgPerMl) / 60;
+        totalPerHr = rateMlHr * concMcgPerMl;
+      } else if (unit === 'mcg/min') {
+        delivered = (rateMlHr * concMcgPerMl) / 60;
+        totalPerMin = delivered;
+        totalPerHr = rateMlHr * concMcgPerMl;
+      } else if (unit === 'mcg/kg/hr') {
+        delivered = (rateMlHr * concMcgPerMl) / weight;
+        totalPerHr = rateMlHr * concMcgPerMl;
+        totalPerMin = totalPerHr / 60;
+      } else if (unit === 'mg/kg/hr') {
+        const concMgPerMl = concMcgPerMl / 1000;
+        delivered = (rateMlHr * concMgPerMl) / weight;
+        totalPerHr = rateMlHr * concMgPerMl;
+        totalPerMin = totalPerHr / 60;
+      } else if (unit === 'units/min') {
+        delivered = (rateMlHr * concPerMl) / 60;
+        totalPerMin = delivered;
+        totalPerHr = rateMlHr * concPerMl;
+      }
+
+      document.getElementById('result-delivered-dose').textContent = formatDecimal(delivered);
+      document.getElementById('result-delivered-unit').textContent = unit;
+
+      // Update secondary readouts
+      const totalMinEl = document.getElementById('result-total-min');
+      const totalHrEl = document.getElementById('result-total-hr');
+
+      if (unit === 'units/min') {
+        totalMinEl.textContent = `${delivered.toFixed(3)} units/min`;
+        totalHrEl.textContent = `${totalPerHr.toFixed(2)} units/hr`;
+      } else if (unit === 'mg/kg/hr') {
+        totalMinEl.textContent = `${(totalPerMin).toFixed(2)} mg/min`;
+        totalHrEl.textContent = `${(totalPerHr).toFixed(1)} mg/hr`;
+      } else {
+        totalMinEl.textContent = `${(totalPerMin).toFixed(2)} mcg/min`;
+        totalHrEl.textContent = `${(totalPerHr).toFixed(0)} mcg/hr`;
+      }
+    }
+
+    // REVERSE CALCULATION: Target Clinical Dose -> Pump Rate (ml/hr)
+    function calculateReverseRate(concMcgPerMl, concPerMl, weight, unit) {
+      const target = parseFloat(appState.targetDose) || 0;
+      let reqRateMlHr = 0;
+
+      if (unit === 'mcg/kg/min') {
+        // target * weight * 60 / concMcgPerMl
+        reqRateMlHr = (target * weight * 60) / concMcgPerMl;
+      } else if (unit === 'mcg/min') {
+        // target * 60 / concMcgPerMl
+        reqRateMlHr = (target * 60) / concMcgPerMl;
+      } else if (unit === 'mcg/kg/hr') {
+        // target * weight / concMcgPerMl
+        reqRateMlHr = (target * weight) / concMcgPerMl;
+      } else if (unit === 'mg/kg/hr') {
+        const concMgPerMl = concMcgPerMl / 1000;
+        reqRateMlHr = (target * weight) / concMgPerMl;
+      } else if (unit === 'units/min') {
+        // target * 60 / concPerMl
+        reqRateMlHr = (target * 60) / concPerMl;
+      }
+
+      document.getElementById('result-required-rate').textContent = isFinite(reqRateMlHr) ? reqRateMlHr.toFixed(2) : '0.00';
+      
+      const mlMin = reqRateMlHr / 60;
+      document.getElementById('result-rate-ml-min').textContent = `${mlMin.toFixed(3)} ml/min`;
+
+      const syringeVol = appState.syringeVolume;
+      const durationHours = reqRateMlHr > 0 ? (syringeVol / reqRateMlHr) : 0;
+      document.getElementById('result-syringe-duration').textContent = durationHours > 0 ? `${durationHours.toFixed(1)} hrs` : 'N/A';
+      document.getElementById('calc-full-syringe-duration').textContent = durationHours > 0 ? `${durationHours.toFixed(1)} Hours` : 'N/A';
+    }
+
+    function onPumpRateInput(val) {
+      const parsed = parseFloat(val);
+      if (!isNaN(parsed) && parsed >= 0) {
+        appState.pumpRate = parsed;
+        document.getElementById('slider-pump-rate').value = Math.min(parsed, 30);
+        updateCalculatorDisplays();
+      }
+    }
+
+    function onPumpRateSlider(val) {
+      const parsed = parseFloat(val);
+      appState.pumpRate = parsed;
+      document.getElementById('input-pump-rate').value = parsed.toFixed(1);
+      updateCalculatorDisplays();
+    }
+
+    function setRatePreset(val) {
+      appState.pumpRate = val;
+      document.getElementById('input-pump-rate').value = val.toFixed(1);
+      document.getElementById('slider-pump-rate').value = val;
+      updateCalculatorDisplays();
+    }
+
+    function onTargetDoseInput(val) {
+      const parsed = parseFloat(val);
+      if (!isNaN(parsed) && parsed >= 0) {
+        appState.targetDose = parsed;
+        updateCalculatorDisplays();
+      }
+    }
+
+    function setTargetDosePreset(val) {
+      appState.targetDose = val;
+      document.getElementById('input-target-dose').value = val;
+      updateCalculatorDisplays();
+    }
+
+    function renderTargetPresets(drug) {
+      const container = document.getElementById('target-quick-presets');
+      const unitLabel = document.getElementById('input-target-unit-label');
+      unitLabel.textContent = drug.unit;
+      container.innerHTML = '';
+
+      let presets = [];
+      if (drug.id === 'noradrenaline' || drug.id === 'adrenaline') {
+        presets = [0.05, 0.10, 0.20, 0.50, 1.0];
+      } else if (drug.id === 'vasopressin') {
+        presets = [0.01, 0.02, 0.03, 0.04];
+      } else if (drug.id === 'nitroglycerin') {
+        presets = [10, 25, 50, 100, 150];
+      } else if (drug.id === 'dexmedetomidine') {
+        presets = [0.2, 0.5, 0.7, 1.0, 1.4];
+      } else if (drug.id === 'propofol') {
+        presets = [1.0, 2.0, 3.0, 6.0, 10.0];
+      } else {
+        presets = [0.05, 0.1, 0.2, 0.5];
+      }
+
+      presets.forEach(p => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = "px-2 py-0.5 bg-white border border-slate-200 rounded text-slate-700 hover:bg-teal-50 hover:border-teal-300 font-mono text-[11px]";
+        btn.textContent = `${p}`;
+        btn.onclick = () => setTargetDosePreset(p);
+        container.appendChild(btn);
+      });
+    }
+
+    /* ==========================================================================
+       8. TAB 4: SETTINGS & FORMULARY MANAGEMENT
+       ========================================================================= */
+    let uploadedImageBase64 = '';
+
+    function handleImageFileUpload(input) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          uploadedImageBase64 = e.target.result;
+          const preview = document.getElementById('img-preview-container');
+          preview.innerHTML = `<img src="${uploadedImageBase64}" class="w-full h-full object-cover">`;
+          showToast("Image loaded for drug vial");
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function handleDrugFormSubmit(e) {
+      e.preventDefault();
+      const editId = document.getElementById('edit-drug-id').value;
+      const name = document.getElementById('new-drug-name').value.trim();
+      const category = document.getElementById('new-drug-category').value;
+      const unit = document.getElementById('new-drug-unit').value;
+      const commercial = document.getElementById('new-drug-commercial').value.trim();
+      const defaultAmount = parseFloat(document.getElementById('new-drug-default-amount').value);
+      const amountUnit = document.getElementById('new-drug-amount-unit').value;
+      const range = document.getElementById('new-drug-range').value.trim();
+      const special = document.getElementById('new-drug-special').value.trim();
+      const warnings = document.getElementById('new-drug-warnings').value.trim();
+      const imgUrl = document.getElementById('new-drug-img-url').value.trim();
+
+      const finalImg = uploadedImageBase64 || imgUrl || '';
+
+      if (editId) {
+        // Update existing drug
+        const existing = formulary.find(d => d.id === editId);
+        if (existing) {
+          existing.name = name;
+          existing.category = category;
+          existing.unit = unit;
+          existing.commercial = commercial;
+          existing.amount = defaultAmount;
+          existing.amountUnit = amountUnit;
+          existing.range = range;
+          existing.special = special;
+          existing.warnings = warnings;
+          if (finalImg) existing.img = finalImg;
+          showToast(`Updated "${name}" in formulary`);
+        }
+      } else {
+        // Create new drug
+        const newId = name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+        const newDrug = {
+          id: newId,
+          name: name,
+          category: category,
+          commercial: commercial || `${defaultAmount} ${amountUnit} standard commercial vial`,
+          amount: defaultAmount,
+          amountUnit: amountUnit,
+          unit: unit,
+          range: range || 'Titrate to clinical response',
+          special: special || 'Standard Anaesthetic / ICU monitoring required.',
+          warnings: warnings || 'Careful titration; monitor continuous invasive arterial blood pressure and ECG.',
+          img: finalImg
+        };
+        formulary.push(newDrug);
+        // automatically select for user
+        appState.selectedDrugIds.push(newId);
+        showToast(`Added "${name}" to formulary`);
+      }
+
+      saveFormulary();
+      saveState();
+      cancelDrugEdit();
+    }
+
+    function editDrugFormulary(drugId) {
+      const drug = formulary.find(d => d.id === drugId);
+      if (!drug) return;
+
+      document.getElementById('edit-drug-id').value = drug.id;
+      document.getElementById('new-drug-name').value = drug.name;
+      document.getElementById('new-drug-category').value = drug.category;
+      document.getElementById('new-drug-unit').value = drug.unit;
+      document.getElementById('new-drug-commercial').value = drug.commercial;
+      document.getElementById('new-drug-default-amount').value = drug.amount;
+      document.getElementById('new-drug-amount-unit').value = drug.amountUnit;
+      document.getElementById('new-drug-range').value = drug.range;
+      document.getElementById('new-drug-special').value = drug.special;
+      document.getElementById('new-drug-warnings').value = drug.warnings;
+      document.getElementById('new-drug-img-url').value = drug.img || '';
+
+      if (drug.img) {
+        document.getElementById('img-preview-container').innerHTML = `<img src="${drug.img}" class="w-full h-full object-cover">`;
+      } else {
+        document.getElementById('img-preview-container').innerHTML = `<i class="fa-solid fa-image"></i>`;
+      }
+
+      document.getElementById('form-drug-title').textContent = `Edit Drug: ${drug.name}`;
+      document.getElementById('btn-save-drug').innerHTML = `<i class="fa-solid fa-check"></i> Update Drug`;
+      document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+      // Scroll form into view
+      document.getElementById('drug-editor-form').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function cancelDrugEdit() {
+      document.getElementById('edit-drug-id').value = '';
+      document.getElementById('drug-editor-form').reset();
+      uploadedImageBase64 = '';
+      document.getElementById('img-preview-container').innerHTML = `<i class="fa-solid fa-image"></i>`;
+      document.getElementById('form-drug-title').textContent = `Add New Infusion Drug to Formulary`;
+      document.getElementById('btn-save-drug').innerHTML = `<i class="fa-solid fa-plus"></i> Save Drug to Formulary`;
+      document.getElementById('btn-cancel-edit').classList.add('hidden');
+    }
+
+    function deleteDrugFormulary(drugId) {
+      const drug = formulary.find(d => d.id === drugId);
+      const name = drug ? drug.name : drugId;
+      
+      formulary = formulary.filter(d => d.id !== drugId);
+      appState.selectedDrugIds = appState.selectedDrugIds.filter(id => id !== drugId);
+      if (appState.activeDrugId === drugId) {
+        appState.activeDrugId = appState.selectedDrugIds[0] || null;
+      }
+
+      saveFormulary();
+      saveState();
+      showToast(`Removed "${name}" from formulary`);
+    }
+
+    function resetFormularyToDefault() {
+      formulary = [...DEFAULT_FORMULARY];
+      saveFormulary();
+      showToast("Reset formulary back to standard clinical default");
+    }
+
+    function renderFormularyTable() {
+      const tbody = document.getElementById('formulary-table-body');
+      tbody.innerHTML = '';
+      document.getElementById('formulary-total-count').textContent = formulary.length;
+
+      formulary.forEach(drug => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-50/80 transition";
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="font-bold text-slate-800">${drug.name}</div>
+            <span class="inline-block px-2 py-0.5 text-[10px] uppercase font-semibold bg-slate-100 text-slate-600 rounded">
+              ${CATEGORY_META[drug.category] ? CATEGORY_META[drug.category].name : drug.category}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-slate-600 max-w-xs truncate">
+            ${drug.commercial}
+          </td>
+          <td class="py-3 px-4 font-mono font-medium text-slate-800">
+            ${drug.amount} ${drug.amountUnit} in 50ml
+          </td>
+          <td class="py-3 px-4">
+            <div class="font-mono font-bold text-sky-700">${drug.unit}</div>
+            <div class="text-[11px] text-slate-500">${drug.range}</div>
+          </td>
+          <td class="py-3 px-4 text-right space-x-2">
+            <button onclick="editDrugFormulary('${drug.id}')" class="text-sky-600 hover:text-sky-800 p-1.5 rounded-lg hover:bg-sky-50 transition" title="Edit">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button onclick="deleteDrugFormulary('${drug.id}')" class="text-rose-500 hover:text-rose-700 p-1.5 rounded-lg hover:bg-rose-50 transition" title="Delete">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /* ==========================================================================
+       9. UTILITY TOAST NOTIFICATIONS
+       ========================================================================== */
+    let toastTimeout = null;
+    function showToast(text) {
+      const toast = document.getElementById('toast-msg');
+      const textEl = document.getElementById('toast-text');
+      textEl.textContent = text;
+      
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3200);
+    }
+  </script>
+</body>
+</html>
