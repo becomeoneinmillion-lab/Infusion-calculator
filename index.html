@@ -100,26 +100,6 @@
     </div>
   </header>
 
-  <!-- ACTIVE CLINICAL BANNER -->
-  <section class="bg-white border-b border-slate-200">
-    <div class="max-w-4xl mx-auto px-4 py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
-      <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-teal-700 font-bold flex items-center gap-1">
-          <i class="fa-solid fa-heart-pulse"></i> Case:
-        </span>
-        <span class="bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 text-slate-700">
-          Drug: <strong id="strip-drug-name" class="text-slate-900 font-extrabold">None Selected</strong>
-        </span>
-        <span class="bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 text-slate-700">
-          Weight: <strong id="strip-weight" class="text-slate-900 font-mono font-bold">-- kg</strong>
-        </span>
-        <span class="bg-slate-100 px-2.5 py-0.5 rounded-lg border border-slate-200 text-slate-700">
-          Syringe: <strong id="strip-syringe" class="text-teal-700 font-mono font-bold">50 mL</strong>
-        </span>
-      </div>
-    </div>
-  </section>
-
   <!-- MAIN WIZARD CONTAINER -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-3 sm:p-5">
 
@@ -359,7 +339,6 @@
             <h2 class="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
               <i class="fa-solid fa-sliders text-teal-600"></i> Calculation & Titration
             </h2>
-            <p class="text-xs text-slate-500 mt-0.5" id="step5-drug-subtitle">Drug Preparation & Live Infusion Rate</p>
           </div>
 
           <!-- PROMINENT FORWARD / REVERSE SEGMENTED CONTROL -->
@@ -1891,7 +1870,6 @@
       renderDoctorData();
       renderStep1Drugs();
       updateStepBreadcrumbs();
-      updateActiveStrip();
       renderSettingsFormularyTable();
     });
 
@@ -1910,7 +1888,7 @@
     }
 
     function saveAppState() {
-      updateActiveStrip();
+      // state persistent
     }
 
     /* STEP NAVIGATION */
@@ -1940,7 +1918,6 @@
       else if (stepNumber === 5) setupStep5Combined();
 
       updateStepBreadcrumbs();
-      updateActiveStrip();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -1961,13 +1938,6 @@
           badge.className = "w-5 h-5 rounded-full bg-white border border-slate-300 flex items-center justify-center text-[10px]";
         }
       }
-    }
-
-    function updateActiveStrip() {
-      const drug = getCurrentDrug();
-      document.getElementById('strip-drug-name').textContent = drug ? drug.name : 'None Selected';
-      document.getElementById('strip-weight').textContent = appState.weight ? `${appState.weight} kg` : '-- kg';
-      document.getElementById('strip-syringe').textContent = `${appState.syringeVolume} mL`;
     }
 
     function getCurrentDrug() {
@@ -2201,7 +2171,6 @@
       const prep = getCurrentPrep();
       if (!prep || !drug) return;
 
-      document.getElementById('step5-drug-subtitle').textContent = `${drug.name} • ${prep.label}`;
       document.getElementById('forward-drug-stock-strength').textContent = `${prep.strengthVal} ${prep.strengthUnit}`;
       document.getElementById('input-drug-ml').value = appState.drugMl;
       document.getElementById('input-diluent-ml').value = appState.diluentMl;
@@ -2214,7 +2183,7 @@
       const sc = drug.scenarios || {};
       document.getElementById('step5-scenario-box').innerHTML = `
         <strong class="text-slate-900 font-extrabold">${sc.title || 'Clinical Recommendations'}:</strong><br>
-        ${sc.body || 'Titrate continuously based on invasive arterial pressure and perfusion metrics.'}
+        ${sc.body || 'Titrate continuously based on invasive arterial pressure and patient response.'}
       `;
 
       recalculateForwardMath();
@@ -2333,8 +2302,6 @@
           if (dose1MlHrMin) dose1MlHrMin.textContent = `Total: ${deliveredMin.toFixed(2)} mcg/min • Hourly: ${concMgPerMl.toFixed(3)} mg/hr`;
         }
       }
-
-      updateActiveStrip();
     }
 
     function selectDisplayMetric(metric) {
