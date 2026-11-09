@@ -438,9 +438,15 @@
               <label class="block text-xs font-extrabold text-teal-900 uppercase mb-1">OR Target Dose at 1 mL/hr:</label>
               <div class="flex items-center gap-2">
                 <input type="number" id="reverse-target-dose" step="any" min="0.0001" placeholder="0.02"
-                  class="w-2/3 rounded-xl bg-white border border-teal-300 px-3 py-2 font-mono font-bold text-slate-900 text-sm focus:border-teal-600 focus:outline-none"
+                  class="w-1/2 rounded-xl bg-white border border-teal-300 px-3 py-2 font-mono font-bold text-slate-900 text-sm focus:border-teal-600 focus:outline-none"
                   oninput="calculateReverseFromDose(this.value)">
-                <span id="reverse-target-dose-unit" class="w-1/3 text-xs font-bold text-teal-900 font-mono">mcg/kg/min</span>
+                <select id="reverse-target-dose-unit-select" class="w-1/2 rounded-xl border border-teal-300 bg-white px-2 py-2 text-xs font-mono font-bold text-teal-900 focus:outline-none focus:border-teal-600 shadow-sm" onchange="handleReverseDoseUnitChange()">
+                  <option value="mcg/kg/min">mcg/kg/min</option>
+                  <option value="mcg/min">mcg/min</option>
+                  <option value="mg/hr">mg/hr</option>
+                  <option value="mg/kg/hr">mg/kg/hr</option>
+                  <option value="units/min">units/min</option>
+                </select>
               </div>
             </div>
           </div>
@@ -2415,11 +2421,26 @@
 
     function initReverseModeInputs() {
       const drug = getCurrentDrug();
-      const doseUnitLabel = document.getElementById('reverse-target-dose-unit');
-      if (doseUnitLabel) doseUnitLabel.textContent = drug.unit;
+      const doseUnitSelect = document.getElementById('reverse-target-dose-unit-select');
+      
+      // Auto-set the dropdown to match the drug's preferred unit or current metric
+      if (doseUnitSelect) {
+        if (drug && drug.unit && ['mcg/kg/min', 'mcg/min', 'mg/hr', 'mg/kg/hr', 'units/min'].includes(drug.unit)) {
+          doseUnitSelect.value = drug.unit;
+        } else if (appState.selectedMetric && ['mcg/kg/min', 'mcg/min', 'mg/hr'].includes(appState.selectedMetric)) {
+          doseUnitSelect.value = appState.selectedMetric;
+        }
+      }
 
       document.getElementById('reverse-target-conc').value = appState.concMcgPerMl.toFixed(1);
       calculateReverseFromConc(appState.concMcgPerMl);
+    }
+
+    function handleReverseDoseUnitChange() {
+      const doseVal = document.getElementById('reverse-target-dose').value;
+      if (doseVal) {
+        calculateReverseFromDose(doseVal);
+      }
     }
 
     function calculateReverseFromConc(concVal) {
@@ -2448,7 +2469,13 @@
 
       const resDrug = document.getElementById('rev-res-drug-ml');
       const resDil = document.getElementById('rev-res-diluent-ml');
-      if (resDrug) resDrug.textContent = `${reqDrugMl.toFixed(2)} mL`;
+      if (resDrug) {
+        if (reqDrugMl > syringeVol) {
+          resDrug.innerHTML = `<span class="text-rose-600 font-bold">${reqDrugMl.toFixed(1)} mL (Exceeds ${syringeVol} mL syringe!)</span>`;
+        } else {
+          resDrug.textContent = `${reqDrugMl.toFixed(2)} mL`;
+        }
+      }
       if (resDil) resDil.textContent = `${reqDiluentMl.toFixed(2)} mL`;
     }
 
@@ -2456,20 +2483,46 @@
       const targetDose = parseFloat(doseVal);
       if (isNaN(targetDose) || targetDose <= 0) return;
 
-      const drug = getCurrentDrug();
       const weight = parseFloat(appState.weight) || 70;
+      const selectedUnit = document.getElementById('reverse-target-dose-unit-select').value;
 
       let targetConcMcgPerMl = 0;
-      if (drug.unit === 'mcg/kg/min') {
-        targetConcMcgPerMl = targetDose * weight * 60;
-      } else if (drug.unit === 'mcg/min') {
-        targetConcMcgPerMl = targetDose * 60;
-      } else if (drug.unit === 'mg/kg/hr') {
-        targetConcMcgPerMl = targetDose * weight * 1000;
-      }
+      let targetConcMgPerMl = 0;
+      let targetConcUnitsPerMl = 0;
 
-      document.getElementById('reverse-target-conc').value = targetConcMcgPerMl.toFixed(1);
-      calculateReverseFromConc(targetConcMcgPerMl);
+      // 1 mL/hr delivery means hourly delivery = concentration in 1 mL:
+      // Rate = 1 mL/hr
+      if (selectedUnit === 'mcg/kg/min') {
+        // Dose (mcg/kg/min) * weight (kg) * 60 min = total mcg delivered in 1 hr (in 1 mL)
+        targetConcMcgPerMl = targetDose * weight * 60;
+        document.getElementById('reverse-conc-unit').value = 'mcg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMcgPerMl.toFixed(1);
+        calculateReverseFromConc(targetConcMcgPerMl);
+      } else if (selectedUnit === 'mcg/min') {
+        // Dose (mcg/min) * 60 min = total mcg delivered in 1 hr (in 1 mL)
+        targetConcMcgPerMl = targetDose * 60;
+        document.getElementById('reverse-conc-unit').value = 'mcg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMcgPerMl.toFixed(1);
+        calculateReverseFromConc(targetConcMcgPerMl);
+      } else if (selectedUnit === 'mg/hr') {
+        // Dose (mg/hr) delivered in 1 mL/hr = target concentration is Dose mg/mL
+        targetConcMgPerMl = targetDose;
+        document.getElementById('reverse-conc-unit').value = 'mg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(3);
+        calculateReverseFromConc(targetConcMgPerMl);
+      } else if (selectedUnit === 'mg/kg/hr') {
+        // Dose (mg/kg/hr) * weight (kg) = total mg delivered in 1 hr (in 1 mL)
+        targetConcMgPerMl = targetDose * weight;
+        document.getElementById('reverse-conc-unit').value = 'mg/ml';
+        document.getElementById('reverse-target-conc').value = targetConcMgPerMl.toFixed(3);
+        calculateReverseFromConc(targetConcMgPerMl);
+      } else if (selectedUnit === 'units/min') {
+        // Dose (units/min) * 60 = total units delivered in 1 hr (in 1 mL)
+        targetConcUnitsPerMl = targetDose * 60;
+        document.getElementById('reverse-conc-unit').value = 'units/ml';
+        document.getElementById('reverse-target-conc').value = targetConcUnitsPerMl.toFixed(3);
+        calculateReverseFromConc(targetConcUnitsPerMl);
+      }
     }
 
     function applyReverseRecipeToForward() {
