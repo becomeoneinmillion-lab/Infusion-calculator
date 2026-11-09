@@ -98,6 +98,45 @@
         </div>
       </div>
     </div>
+
+    <!-- PERSISTENT STICKY ACTIVE CASE BAR (NEVER HIDES ON SCROLL) -->
+    <div id="sticky-case-summary" class="bg-teal-700 text-white border-b border-teal-800 px-3 py-2 shadow-sm transition-all hidden">
+      <div class="max-w-4xl mx-auto flex items-center justify-between gap-2 overflow-x-auto touch-scroll text-xs">
+        <div class="flex items-center gap-1.5 flex-nowrap shrink-0">
+          <span class="text-[10px] font-black uppercase tracking-wider text-teal-200 hidden sm:inline flex items-center gap-1">
+            <i class="fa-solid fa-heart-pulse"></i> Active:
+          </span>
+
+          <!-- Drug Chip -->
+          <button onclick="goToStep(1)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change drug">
+            <span class="text-[10px] text-teal-200 font-bold uppercase">Drug:</span>
+            <span id="sticky-chip-drug" class="font-extrabold whitespace-nowrap">--</span>
+          </button>
+
+          <!-- Weight Chip -->
+          <button onclick="goToStep(2)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change weight">
+            <span class="text-[10px] text-teal-200 font-bold uppercase">Wt:</span>
+            <span id="sticky-chip-weight" class="font-extrabold font-mono whitespace-nowrap">-- kg</span>
+          </button>
+
+          <!-- Syringe Chip -->
+          <button onclick="goToStep(4)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change syringe">
+            <span class="text-[10px] text-teal-200 font-bold uppercase">Syr:</span>
+            <span id="sticky-chip-syringe" class="font-extrabold font-mono whitespace-nowrap">-- mL</span>
+          </button>
+
+          <!-- Commercial Prep Chip -->
+          <button onclick="goToStep(3)" class="bg-teal-800/80 hover:bg-teal-900 border border-teal-500/50 rounded-lg px-2 py-1 text-white flex items-center gap-1 active:scale-95 transition" title="Tap to change commercial preparation">
+            <span class="text-[10px] text-teal-200 font-bold uppercase">Prep:</span>
+            <span id="sticky-chip-prep" class="font-bold text-teal-100 truncate max-w-[150px] sm:max-w-[260px] whitespace-nowrap">--</span>
+          </button>
+        </div>
+
+        <button onclick="goToStep(1)" class="text-[11px] text-teal-200 hover:text-white font-extrabold underline shrink-0 pl-1">
+          Edit
+        </button>
+      </div>
+    </div>
   </header>
 
   <!-- MAIN WIZARD CONTAINER -->
@@ -1918,7 +1957,33 @@
       else if (stepNumber === 5) setupStep5Combined();
 
       updateStepBreadcrumbs();
+      updateStickyCaseSummary();
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function updateStickyCaseSummary() {
+      const summaryBar = document.getElementById('sticky-case-summary');
+      const drug = getCurrentDrug();
+
+      // Only display sticky summary bar once a drug is chosen
+      if (!drug) {
+        summaryBar.classList.add('hidden');
+        return;
+      }
+
+      summaryBar.classList.remove('hidden');
+
+      const prep = getCurrentPrep();
+      document.getElementById('sticky-chip-drug').textContent = drug.name;
+      document.getElementById('sticky-chip-weight').textContent = `${appState.weight || 70} kg`;
+      document.getElementById('sticky-chip-syringe').textContent = `${appState.syringeVolume || 50} mL`;
+      
+      if (prep) {
+        // Compact label for sticky bar
+        document.getElementById('sticky-chip-prep').textContent = `${prep.label} (${prep.strengthVal} ${prep.strengthUnit})`;
+      } else {
+        document.getElementById('sticky-chip-prep').textContent = '--';
+      }
     }
 
     function updateStepBreadcrumbs() {
@@ -2041,6 +2106,7 @@
       }
       saveAppState();
       renderStep1Drugs();
+      updateStickyCaseSummary();
       recalculateForwardMath();
     }
 
@@ -2051,6 +2117,7 @@
         appState.weight = parsed;
         document.getElementById('step2-weight-error').classList.add('hidden');
         saveAppState();
+        updateStickyCaseSummary();
         recalculateForwardMath();
       } else {
         appState.weight = null;
@@ -2138,6 +2205,20 @@
       }
       saveAppState();
       renderStep3Preparations();
+      updateStickyCaseSummary();
+      recalculateForwardMath();
+    }
+
+    /* STEP 4: CHOOSE SYRINGE */
+    function selectSyringe(vol) {
+      appState.syringeVolume = vol;
+      if (appState.drugMl >= vol) {
+        appState.drugMl = vol / 2;
+      }
+      appState.diluentMl = vol - appState.drugMl;
+      saveAppState();
+      renderStep4Syringe();
+      updateStickyCaseSummary();
       recalculateForwardMath();
     }
 
@@ -2685,6 +2766,7 @@
       selectedCategoryId = 'all';
       filterCategory('all');
       renderStep1Drugs();
+      updateStickyCaseSummary();
       goToStep(1);
       if (showToastMsg) showToast("Reset to initial state");
     }
