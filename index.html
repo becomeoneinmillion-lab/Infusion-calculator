@@ -525,23 +525,9 @@
                 CHOOSE DISPLAY METRIC:
               </span>
 
-              <div class="inline-flex rounded-xl bg-slate-200 p-1 border border-slate-300 w-full sm:w-auto overflow-x-auto touch-scroll">
-                <button type="button" onclick="selectDisplayMetric('mcg/kg/min')" id="metric-btn-mcg-kg-min"
-                  class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold transition bg-teal-600 text-white shadow">
-                  mcg/kg/min
-                </button>
-                <button type="button" onclick="selectDisplayMetric('mcg/min')" id="metric-btn-mcg-min"
-                  class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition">
-                  mcg/min
-                </button>
-                <button type="button" onclick="selectDisplayMetric('mg/hr')" id="metric-btn-mg-hr"
-                  class="flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition">
-                  mg/hr
-                </button>
-                <button type="button" onclick="selectDisplayMetric('custom')" id="metric-btn-custom"
-                  class="hidden px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition">
-                  Dosing Unit
-                </button>
+              <!-- Dynamic Metric Container -->
+              <div id="dynamic-metric-container" class="inline-flex rounded-xl bg-slate-200 p-1 border border-slate-300 w-full sm:w-auto overflow-x-auto touch-scroll">
+                <!-- Buttons rendered dynamically to match drug clinical unit profile -->
               </div>
             </div>
 
@@ -2495,10 +2481,22 @@
               <i class="fa-solid fa-vial"></i>
             </div>
             <div>
-              <h4 class="font-bold text-sm text-slate-900">${prep.label}</h4>
-              <div class="text-xs text-slate-500 font-medium">${prep.sublabel || ''}</div>
-              <div class="text-xs text-teal-700 mt-0.5 font-mono font-bold">
-                Strength: ${prep.strengthVal} ${prep.strengthUnit} &bull; ${prep.totalContent}
+              <label class="block text-xs font-extrabold text-teal-900 uppercase mb-1">OR Target Dose at 1 mL/hr:</label>
+              <div class="flex items-center gap-2">
+                <input type="number" id="reverse-target-dose" step="any" min="0.0001" placeholder="0.02"
+                  class="w-1/2 rounded-xl bg-white border border-teal-300 px-3 py-2 font-mono font-bold text-slate-900 text-sm focus:border-teal-600 focus:outline-none"
+                  oninput="calculateReverseFromDose(this.value)">
+                <select id="reverse-target-dose-unit-select" class="w-1/2 rounded-xl border border-teal-300 bg-white px-2 py-2 text-xs font-mono font-bold text-teal-900 focus:outline-none focus:border-teal-600 shadow-sm" onchange="handleReverseDoseUnitChange()">
+                  <option value="mcg/kg/min">mcg/kg/min</option>
+                  <option value="mcg/min">mcg/min</option>
+                  <option value="mg/hr">mg/hr</option>
+                  <option value="mg/min">mg/min</option>
+                  <option value="mg/kg/hr">mg/kg/hr</option>
+                  <option value="g/hr">g/hr</option>
+                  <option value="units/min">units/min</option>
+                  <option value="units/hr">units/hr</option>
+                  <option value="ml/kg/min">mL/kg/min</option>
+                </select>
               </div>
             </div>
           </div>
@@ -2561,38 +2559,38 @@
         }
       });
     }
+    function selectSingleDrug(drugId) {
+      appState.selectedDrugId = drugId;
+      // Do NOT default-select preparation: user must pick in Step 3
+      appState.selectedPrepId = null;
 
-    /* STEP 5: CALCULATION & TITRATION */
-    function setupStep5Combined() {
       const drug = getCurrentDrug();
-      const prep = getCurrentPrep();
-      if (!prep || !drug) return;
-
-      const syrVol = appState.syringeVolume || 50;
-
-      if (!appState.drugMl || appState.drugMl <= 0) {
-        appState.drugMl = prep.defaultMlToDraw || prep.ampVol || 4;
-        appState.diluentMl = Math.max(0, syrVol - appState.drugMl);
+      if (drug) {
+        // Automatically switch metric to the drug's primary clinical unit
+        if (drug.id === 'vasopressin' || drug.unit === 'units/min') {
+          appState.selectedMetric = 'units/min';
+        } else if (drug.unit === 'units/hr') {
+          appState.selectedMetric = 'units/hr';
+        } else if (drug.unit === 'g/hr') {
+          appState.selectedMetric = 'g/hr';
+        } else if (drug.unit === 'mg/min') {
+          appState.selectedMetric = 'mg/min';
+        } else if (drug.unit === 'ml/kg/min') {
+          appState.selectedMetric = 'ml/kg/min';
+        } else if (drug.unit === 'mcg/min') {
+          appState.selectedMetric = 'mcg/min';
+        } else if (drug.unit === 'mg/hr') {
+          appState.selectedMetric = 'mg/hr';
+        } else if (drug.unit === 'mg/kg/hr') {
+          appState.selectedMetric = 'mg/kg/hr';
+        } else {
+          appState.selectedMetric = 'mcg/kg/min';
+        }
       }
 
-      document.getElementById('forward-drug-stock-strength').textContent = `${prep.strengthVal} ${prep.strengthUnit}`;
-      document.getElementById('input-drug-ml').value = appState.drugMl;
-      document.getElementById('input-diluent-ml').value = appState.diluentMl;
-      document.getElementById('forward-syringe-capacity-badge').textContent = `${syrVol} mL`;
-
-      document.getElementById('live-pump-speed').value = appState.pumpRate.toFixed(1);
-      document.getElementById('slider-live-rate').value = Math.min(appState.pumpRate, 30);
-
-      document.getElementById('step5-ref-range').textContent = `Ref: ${drug.range || 'Standard titrations'}`;
-      const sc = drug.scenarios || {};
-      document.getElementById('step5-scenario-box').innerHTML = `
-        <strong class="text-slate-900 font-extrabold">${sc.title || 'Clinical Recommendations'}:</strong><br>
-        ${sc.body || 'Titrate continuously based on invasive arterial pressure and patient response.'}
-      `;
-
-      recalculateForwardMath();
-      renderSelectedMetricButtons();
-      recalculateLivePumpDoses();
+      saveAppState();
+      renderStep1Drugs();
+      updateStickyCaseSummary();
       updateBottomBar();
     }
 
@@ -2695,10 +2693,11 @@
       const dose1MlHrMin = document.getElementById('display-1ml-hr-total-min');
 
       if (dose1MlHrBox) {
-        if (drug.unit === 'units/min') {
-          const deliveredMin = (totalUnits / totalSyringeVol) / 60;
+        if (drug.id === 'vasopressin' || drug.unit === 'units/min' || prep.strengthUnit === 'units/ml') {
+          const unitsPerMl = totalUnits / totalSyringeVol;
+          const deliveredMin = unitsPerMl / 60;
           dose1MlHrBox.textContent = `${deliveredMin.toFixed(4)} units/min`;
-          if (dose1MlHrMin) dose1MlHrMin.textContent = `Hourly Total: ${(totalUnits / totalSyringeVol).toFixed(2)} units/hr`;
+          if (dose1MlHrMin) dose1MlHrMin.textContent = `Hourly Delivery: ${unitsPerMl.toFixed(3)} units/hr`;
         } else if (drug.unit === 'g/hr') {
           const deliveredGHr = (concMgPerMl * 1) / 1000;
           dose1MlHrBox.textContent = `${deliveredGHr.toFixed(3)} g/hr`;
@@ -2731,27 +2730,58 @@
       recalculateLivePumpDoses();
     }
 
-    function renderSelectedMetricButtons() {
-      const drug = getCurrentDrug();
-      const customBtn = document.getElementById('metric-btn-custom');
-      
-      if (drug && ['g/hr', 'mg/min', 'ml/kg/min'].includes(drug.unit)) {
-        customBtn.classList.remove('hidden');
-        customBtn.textContent = drug.unit;
-      } else {
-        customBtn.classList.add('hidden');
+    function getApplicableMetricsForDrug(drug) {
+      if (!drug) return ['mcg/kg/min', 'mcg/min', 'mg/hr'];
+
+      if (drug.id === 'vasopressin' || drug.unit === 'units/min' || drug.unit === 'units/hr') {
+        return ['units/min', 'units/hr'];
+      }
+      if (drug.id === 'magnesium_sulphate' || drug.unit === 'g/hr') {
+        return ['g/hr', 'mg/min', 'mg/hr'];
+      }
+      if (drug.id === 'lipid_emulsion' || drug.unit === 'ml/kg/min') {
+        return ['ml/kg/min', 'mL/hr', 'mg/kg/hr'];
+      }
+      if (drug.unit === 'mg/kg/hr') {
+        return ['mg/kg/hr', 'mg/hr', 'mcg/kg/min'];
+      }
+      if (drug.unit === 'mg/min') {
+        return ['mg/min', 'mg/hr', 'mcg/kg/min'];
+      }
+      if (drug.unit === 'mcg/min') {
+        return ['mcg/min', 'mg/hr', 'mcg/kg/min'];
       }
 
-      const metrics = ['mcg/kg/min', 'mcg/min', 'mg/hr', 'custom'];
-      metrics.forEach(m => {
-        const btn = document.getElementById(m === 'custom' ? 'metric-btn-custom' : `metric-btn-${m.replace(/\//g, '-')}`);
-        if (!btn) return;
-        const isActive = (m === 'custom' && appState.selectedMetric === drug?.unit) || (appState.selectedMetric === m);
-        if (isActive) {
-          btn.className = "flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-extrabold transition bg-teal-600 text-white shadow";
-        } else {
-          btn.className = "flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition";
-        }
+      // Default standard
+      return ['mcg/kg/min', 'mcg/min', 'mg/hr'];
+    }
+
+    function renderSelectedMetricButtons() {
+      const drug = getCurrentDrug();
+      const container = document.getElementById('dynamic-metric-container');
+      if (!container) return;
+
+      const applicableMetrics = getApplicableMetricsForDrug(drug);
+
+      // Verify that current selectedMetric is one of the valid metrics for this drug; if not, re-align
+      if (!applicableMetrics.includes(appState.selectedMetric)) {
+        appState.selectedMetric = applicableMetrics[0];
+      }
+
+      container.innerHTML = '';
+
+      applicableMetrics.forEach(metricKey => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectDisplayMetric(metricKey);
+
+        const isActive = appState.selectedMetric === metricKey;
+        btn.className = isActive
+          ? "flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 rounded-lg text-xs font-mono font-extrabold transition bg-teal-600 text-white shadow whitespace-nowrap"
+          : "flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 rounded-lg text-xs font-mono font-bold text-slate-700 hover:text-slate-900 transition whitespace-nowrap";
+
+        btn.textContent = metricKey;
+        container.appendChild(btn);
       });
     }
 
@@ -2788,18 +2818,35 @@
       const valBox = document.getElementById('selected-metric-value');
       const unitBox = document.getElementById('selected-metric-unit');
 
-      if (appState.selectedMetric === 'g/hr' || (drug.unit === 'g/hr' && appState.selectedMetric === 'custom')) {
+      if (drug.id === 'vasopressin' || appState.selectedMetric === 'units/min' || appState.selectedMetric === 'units/hr') {
+        const unitsPerMl = concMgPerMl; // For Vasopressin, concMgPerMl holds units/mL
+        if (appState.selectedMetric === 'units/min') {
+          const doseUnitsMin = (rateMlHr * unitsPerMl) / 60;
+          valBox.textContent = doseUnitsMin.toFixed(4);
+          unitBox.textContent = 'Units / min';
+        } else {
+          const doseUnitsHr = rateMlHr * unitsPerMl;
+          valBox.textContent = doseUnitsHr.toFixed(2);
+          unitBox.textContent = 'Units / hr';
+        }
+        return;
+      }
+
+      if (appState.selectedMetric === 'g/hr') {
         const doseGHr = (rateMlHr * concMgPerMl) / 1000;
         valBox.textContent = doseGHr.toFixed(2);
         unitBox.textContent = 'g / hr';
-      } else if (appState.selectedMetric === 'mg/min' || (drug.unit === 'mg/min' && appState.selectedMetric === 'custom')) {
+      } else if (appState.selectedMetric === 'mg/min') {
         const doseMgMin = (rateMlHr * concMgPerMl) / 60;
         valBox.textContent = formatNum(doseMgMin);
         unitBox.textContent = 'mg / min';
-      } else if (appState.selectedMetric === 'ml/kg/min' || (drug.unit === 'ml/kg/min' && appState.selectedMetric === 'custom')) {
+      } else if (appState.selectedMetric === 'ml/kg/min') {
         const doseMlKgMin = (rateMlHr / weight) / 60;
         valBox.textContent = formatNum(doseMlKgMin);
         unitBox.textContent = 'mL / kg / min';
+      } else if (appState.selectedMetric === 'mL/hr') {
+        valBox.textContent = rateMlHr.toFixed(1);
+        unitBox.textContent = 'mL / hr';
       } else if (appState.selectedMetric === 'mcg/kg/min') {
         const dose = ((rateMlHr * concMcgPerMl) / 60) / weight;
         valBox.textContent = formatNum(dose);
@@ -2808,20 +2855,14 @@
         const dose = (rateMlHr * concMcgPerMl) / 60;
         valBox.textContent = formatNum(dose);
         unitBox.textContent = 'mcg / min';
+      } else if (appState.selectedMetric === 'mg/kg/hr') {
+        const doseMgKgHr = (rateMlHr * concMgPerMl) / weight;
+        valBox.textContent = formatNum(doseMgKgHr);
+        unitBox.textContent = 'mg / kg / hr';
       } else if (appState.selectedMetric === 'mg/hr') {
-        if (drug.unit === 'units/min') {
-          const dose = rateMlHr * concMgPerMl;
-          valBox.textContent = dose.toFixed(2);
-          unitBox.textContent = 'Units / hr';
-        } else if (drug.unit === 'mg/kg/hr') {
-          const doseMgKgHr = (rateMlHr * concMgPerMl) / weight;
-          valBox.textContent = formatNum(doseMgKgHr);
-          unitBox.textContent = 'mg / kg / hr';
-        } else {
-          const dose = rateMlHr * concMgPerMl;
-          valBox.textContent = formatNum(dose);
-          unitBox.textContent = 'mg / hr';
-        }
+        const dose = rateMlHr * concMgPerMl;
+        valBox.textContent = formatNum(dose);
+        unitBox.textContent = 'mg / hr';
       }
     }
 
@@ -2834,14 +2875,20 @@
       const doseUnitSelect = document.getElementById('reverse-target-dose-unit-select');
       
       if (doseUnitSelect) {
-        if (drug && drug.unit && ['mcg/kg/min', 'mcg/min', 'mg/hr', 'mg/min', 'mg/kg/hr', 'g/hr', 'units/min', 'ml/kg/min'].includes(drug.unit)) {
+        if (drug && drug.unit && ['mcg/kg/min', 'mcg/min', 'mg/hr', 'mg/min', 'mg/kg/hr', 'g/hr', 'units/min', 'units/hr', 'ml/kg/min'].includes(drug.unit)) {
           doseUnitSelect.value = drug.unit;
-        } else if (appState.selectedMetric && ['mcg/kg/min', 'mcg/min', 'mg/hr'].includes(appState.selectedMetric)) {
+        } else if (appState.selectedMetric && ['mcg/kg/min', 'mcg/min', 'mg/hr', 'units/min', 'units/hr'].includes(appState.selectedMetric)) {
           doseUnitSelect.value = appState.selectedMetric;
         }
       }
 
-      document.getElementById('reverse-target-conc').value = appState.concMcgPerMl > 0 ? appState.concMcgPerMl.toFixed(1) : '80.0';
+      if (drug && (drug.id === 'vasopressin' || drug.unit === 'units/min' || drug.unit === 'units/hr')) {
+        document.getElementById('reverse-conc-unit').value = 'units/ml';
+        document.getElementById('reverse-target-conc').value = (appState.concMgPerMl || 0.4).toFixed(2);
+      } else {
+        document.getElementById('reverse-target-conc').value = appState.concMcgPerMl > 0 ? appState.concMcgPerMl.toFixed(1) : '80.0';
+      }
+
       calculateReverseFromConc(parseFloat(document.getElementById('reverse-target-conc').value));
     }
 
@@ -2940,6 +2987,11 @@
         calculateReverseFromConc(targetConcMgPerMl);
       } else if (selectedUnit === 'units/min') {
         targetConcUnitsPerMl = targetDose * 60;
+        document.getElementById('reverse-conc-unit').value = 'units/ml';
+        document.getElementById('reverse-target-conc').value = targetConcUnitsPerMl.toFixed(3);
+        calculateReverseFromConc(targetConcUnitsPerMl);
+      } else if (selectedUnit === 'units/hr') {
+        targetConcUnitsPerMl = targetDose; // at 1 mL/hr
         document.getElementById('reverse-conc-unit').value = 'units/ml';
         document.getElementById('reverse-target-conc').value = targetConcUnitsPerMl.toFixed(3);
         calculateReverseFromConc(targetConcUnitsPerMl);
