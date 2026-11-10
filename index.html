@@ -67,28 +67,28 @@
 
   <!-- TOP APP HEADER (STICKY) -->
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
-    <div class="max-w-4xl mx-auto px-4 py-2.5 flex items-center justify-between gap-2">
-      <!-- Title & Branding -->
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center text-lg shadow-sm">
+    <div class="max-w-4xl mx-auto px-3.5 py-2 flex items-center justify-between gap-2">
+      <!-- Title & Branding (Single line compact on mobile) -->
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="w-8 h-8 rounded-lg bg-teal-600 text-white flex items-center justify-center text-sm shadow-sm shrink-0">
           <i class="fa-solid fa-syringe"></i>
         </div>
-        <div>
-          <h1 class="text-base sm:text-lg font-black tracking-tight text-slate-900 leading-none">Infusion Calculator</h1>
-          <p class="text-[11px] font-medium text-slate-500 mt-0.5">Critical Care & Anaesthesia Dilution</p>
+        <div class="truncate">
+          <h1 class="text-sm sm:text-base font-black tracking-tight text-slate-900 leading-tight truncate">Infusion Calculator</h1>
+          <p class="text-[10px] sm:text-xs font-medium text-slate-500 truncate leading-tight">Critical Care & Anaesthesia</p>
         </div>
       </div>
 
       <!-- Action Buttons -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <button id="doctor-profile-btn" onclick="openDoctorModal()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition">
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button id="doctor-profile-btn" onclick="openDoctorModal()" class="flex items-center gap-1 px-2 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold transition">
           <i class="fa-solid fa-user-doctor text-teal-600"></i>
-          <span id="doc-btn-label" class="max-w-[100px] truncate sm:max-w-none">Dr. Anaesthesiologist</span>
+          <span id="doc-btn-label" class="max-w-[85px] truncate sm:max-w-none text-[11px] sm:text-xs">Dr. Anaesthesiologist</span>
         </button>
 
-        <button onclick="resetCalculator()" class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold transition">
-          <i class="fa-solid fa-arrow-rotate-right text-xs"></i>
-          <span>Reset</span>
+        <button onclick="resetCalculator()" class="flex items-center gap-1 px-2 py-1 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold transition">
+          <i class="fa-solid fa-arrow-rotate-right text-[10px]"></i>
+          <span class="text-[11px] sm:text-xs">Reset</span>
         </button>
       </div>
     </div>
@@ -194,55 +194,55 @@
     <!-- ========================================== -->
     <!-- STEP 2: ENTER WEIGHT                       -->
     <!-- ========================================== -->
-    <section id="step-2" class="step-view hidden space-y-5">
+    <section id="step-2" class="step-view hidden space-y-4">
       <div class="text-left">
-        <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+        <h2 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
           <i class="fa-solid fa-weight-scale text-teal-600"></i> Patient Weight (Mandatory)
         </h2>
-        <p class="text-xs text-slate-500">Weight-adjusted calculations directly depend on this parameter</p>
+        <p class="text-[11px] text-slate-500">Weight-adjusted calculations directly depend on this parameter</p>
       </div>
 
       <!-- Weight Input Card -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-3.5">
         <div class="flex items-center justify-between">
-          <label class="text-xs font-black uppercase tracking-wider text-slate-500">Weight in Kilograms (kg) *</label>
-          <span class="text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">Mandatory</span>
+          <label class="text-[11px] font-black uppercase tracking-wider text-slate-500">Weight in Kilograms (kg) *</label>
+          <span class="text-[10px] font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">Mandatory</span>
         </div>
 
-        <!-- Numeric Stepper -->
-        <div class="flex items-center justify-center gap-3">
-          <button onclick="adjustWeight(-5)" class="w-12 h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-base flex items-center justify-center shadow-2xs">-5</button>
-          <button onclick="adjustWeight(-1)" class="w-12 h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-base flex items-center justify-center shadow-2xs">-1</button>
+        <!-- Numeric Stepper (Fixed: No text overlap, clean centered input with outer kg badge) -->
+        <div class="flex items-center justify-center gap-2 sm:gap-3">
+          <button onclick="adjustWeight(-5)" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-sm sm:text-base flex items-center justify-center shadow-2xs">-5</button>
+          <button onclick="adjustWeight(-1)" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-sm sm:text-base flex items-center justify-center shadow-2xs">-1</button>
 
-          <div class="relative flex-1 max-w-[200px]">
+          <div class="flex items-center justify-center bg-slate-50 border-2 border-teal-600 rounded-xl px-2 py-1.5 focus-within:ring-2 focus-within:ring-teal-500 w-32 sm:w-40">
             <input 
               id="patient-weight-input" 
               type="number" 
               min="1" 
               max="250" 
               step="0.5" 
-              placeholder="e.g. 70" 
+              placeholder="70" 
               oninput="handleWeightInput(this.value)" 
-              class="w-full text-center py-3 text-3xl sm:text-4xl font-mono font-black text-slate-900 bg-slate-50 border-2 border-teal-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+              class="w-full text-center text-2xl sm:text-3xl font-mono font-black text-slate-900 bg-transparent focus:outline-none"
             />
-            <span class="absolute right-3 bottom-4 text-xs font-bold text-slate-400 pointer-events-none">kg</span>
+            <span class="text-xs sm:text-sm font-bold text-slate-500 pl-1">kg</span>
           </div>
 
-          <button onclick="adjustWeight(+1)" class="w-12 h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-base flex items-center justify-center shadow-2xs">+1</button>
-          <button onclick="adjustWeight(+5)" class="w-12 h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-base flex items-center justify-center shadow-2xs">+5</button>
+          <button onclick="adjustWeight(+1)" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-sm sm:text-base flex items-center justify-center shadow-2xs">+1</button>
+          <button onclick="adjustWeight(+5)" class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl border border-slate-300 bg-slate-50 active:bg-slate-200 text-slate-700 font-extrabold text-sm sm:text-base flex items-center justify-center shadow-2xs">+5</button>
         </div>
 
         <!-- Preset Chips -->
-        <div class="pt-2">
-          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2 text-center">Quick Select Weight:</span>
-          <div class="flex flex-wrap items-center justify-center gap-2">
-            <button onclick="setWeightPreset(40)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">40 kg</button>
-            <button onclick="setWeightPreset(50)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">50 kg</button>
-            <button onclick="setWeightPreset(60)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">60 kg</button>
-            <button onclick="setWeightPreset(70)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">70 kg</button>
-            <button onclick="setWeightPreset(80)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">80 kg</button>
-            <button onclick="setWeightPreset(90)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">90 kg</button>
-            <button onclick="setWeightPreset(100)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">100 kg</button>
+        <div class="pt-1">
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5 text-center">Quick Select Weight:</span>
+          <div class="flex flex-wrap items-center justify-center gap-1.5">
+            <button onclick="setWeightPreset(40)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">40 kg</button>
+            <button onclick="setWeightPreset(50)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">50 kg</button>
+            <button onclick="setWeightPreset(60)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">60 kg</button>
+            <button onclick="setWeightPreset(70)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">70 kg</button>
+            <button onclick="setWeightPreset(80)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">80 kg</button>
+            <button onclick="setWeightPreset(90)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">90 kg</button>
+            <button onclick="setWeightPreset(100)" class="px-2.5 py-1 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 text-xs font-bold text-slate-700 hover:text-teal-800">100 kg</button>
           </div>
         </div>
       </div>
@@ -280,15 +280,17 @@
     <!-- ========================================== -->
     <!-- STEP 3: COMMERCIAL PREPARATIONS             -->
     <!-- ========================================== -->
-    <section id="step-3" class="step-view hidden space-y-4">
-      <div class="flex items-center justify-between">
-        <div>
-          <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-            <i class="fa-solid fa-box-open text-teal-600"></i> Commercial Preparations
+    <section id="step-3" class="step-view hidden space-y-3.5">
+      <!-- Title on a single line + Drug Chip -->
+      <div>
+        <div class="flex items-center justify-between gap-2">
+          <h2 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-1.5 whitespace-nowrap truncate">
+            <i class="fa-solid fa-box-open text-teal-600 text-sm"></i>
+            <span>Commercial Preparations</span>
           </h2>
-          <p class="text-xs text-slate-500">Formulations commonly used across India & Worldwide</p>
+          <span id="step3-drug-badge" class="px-2 py-0.5 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-[11px] font-bold shrink-0 truncate max-w-[140px]"></span>
         </div>
-        <span id="step3-drug-badge" class="px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-200 text-teal-800 text-xs font-bold"></span>
+        <p class="text-[11px] text-slate-500 mt-0.5 truncate">Formulations commonly used across India & Worldwide</p>
       </div>
 
       <!-- Prep Cards List -->
@@ -302,39 +304,36 @@
     <!-- ========================================== -->
     <section id="step-4" class="step-view hidden space-y-4">
       <div>
-        <h2 class="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+        <h2 class="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
           <i class="fa-solid fa-vial-circle-check text-teal-600"></i> Choose Syringe Size
         </h2>
-        <p class="text-xs text-slate-500">Select target syringe pump chamber volume</p>
+        <p class="text-[11px] text-slate-500">Select target syringe pump chamber volume</p>
       </div>
 
-      <!-- Simple 3 choices -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+      <!-- Simple, clean, compact 3 options (no subtext, fits entirely on mobile screen) -->
+      <div class="grid grid-cols-3 gap-2.5 pt-1">
         <!-- 50 mL -->
-        <div onclick="selectSyringe(50)" id="syringe-card-50" class="syringe-opt-card p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-teal-500 cursor-pointer text-center space-y-2 transition active:scale-98">
-          <div class="w-12 h-12 mx-auto rounded-full bg-teal-50 text-teal-600 flex items-center justify-center text-xl">
+        <div onclick="selectSyringe(50)" id="syringe-card-50" class="syringe-opt-card py-5 px-2 rounded-2xl border-2 border-slate-200 bg-white hover:border-teal-500 cursor-pointer text-center space-y-2 transition active:scale-95 shadow-2xs">
+          <div class="w-10 h-10 mx-auto rounded-full bg-slate-100 text-teal-600 flex items-center justify-center text-base">
             <i class="fa-solid fa-syringe"></i>
           </div>
-          <div class="text-2xl font-black text-slate-900">50 mL</div>
-          <span class="inline-block text-[11px] font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">Standard ICU / OT</span>
+          <div class="text-xl sm:text-2xl font-black text-slate-900">50 mL</div>
         </div>
 
         <!-- 20 mL -->
-        <div onclick="selectSyringe(20)" id="syringe-card-20" class="syringe-opt-card p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-teal-500 cursor-pointer text-center space-y-2 transition active:scale-98">
-          <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xl">
+        <div onclick="selectSyringe(20)" id="syringe-card-20" class="syringe-opt-card py-5 px-2 rounded-2xl border-2 border-slate-200 bg-white hover:border-teal-500 cursor-pointer text-center space-y-2 transition active:scale-95 shadow-2xs">
+          <div class="w-10 h-10 mx-auto rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-base">
             <i class="fa-solid fa-syringe"></i>
           </div>
-          <div class="text-2xl font-black text-slate-900">20 mL</div>
-          <span class="inline-block text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">Intermediate</span>
+          <div class="text-xl sm:text-2xl font-black text-slate-900">20 mL</div>
         </div>
 
         <!-- 10 mL -->
-        <div onclick="selectSyringe(10)" id="syringe-card-10" class="syringe-opt-card p-5 rounded-2xl border-2 border-slate-200 bg-white hover:border-teal-500 cursor-pointer text-center space-y-2 transition active:scale-98">
-          <div class="w-12 h-12 mx-auto rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xl">
+        <div onclick="selectSyringe(10)" id="syringe-card-10" class="syringe-opt-card py-5 px-2 rounded-2xl border-2 border-slate-200 bg-white hover:border-teal-500 cursor-pointer text-center space-y-2 transition active:scale-95 shadow-2xs">
+          <div class="w-10 h-10 mx-auto rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-base">
             <i class="fa-solid fa-syringe"></i>
           </div>
-          <div class="text-2xl font-black text-slate-900">10 mL</div>
-          <span class="inline-block text-[11px] font-bold text-slate-600 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">Target / Paediatric</span>
+          <div class="text-xl sm:text-2xl font-black text-slate-900">10 mL</div>
         </div>
       </div>
     </section>
