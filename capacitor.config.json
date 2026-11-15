@@ -1,0 +1,6 @@
+{
+  "appId": "com.nkinfusioncalc.app",
+  "appName": "Nk's Infusion calculator",
+  "webDir": "www",
+  "bundledWebRuntime": false
+}
